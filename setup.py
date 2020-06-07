@@ -15,22 +15,23 @@ def read(*parts):
 
 def find_version(*file_paths):
     version_file = read(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
-                              version_file, re.M)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
     if version_match:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
 
-install_requires = [
-    'click==7.1.2',
-    'jsonschema==3.2.0'
-]
+def read_requires(*file_paths):
+    requires = []
+    if os.path.isfile(*file_paths):
+        raw_requires = read(*file_paths)
+        requires.append(raw_requires.splitlines())
+    return requires
 
-tests_require = [
-    'pytest==5.4.1',
-    'tox==3.14.6'
-]
+
+install_requires = read_requires('requirements.txt')
+
+tests_require = read_requires('requirements-tests.txt')
 
 extras_require = {
     'tests': tests_require
@@ -51,7 +52,7 @@ except Exception as e:
 setup(
     name='templaty',
     version=find_version("templaty", "__init__.py"),
-    description='templaty provide a way to build and test container images.',
+    description='Render jinja2 templates on the command line with shell environment variables.',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     url='https://github.com/amannocci/templaty',
@@ -77,4 +78,3 @@ setup(
         'Programming Language :: Python :: 3.6'
     ]
 )
-

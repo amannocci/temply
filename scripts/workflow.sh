@@ -11,8 +11,8 @@ function help() {
   echo "-- Help Menu"
   echo "> 1. ./scripts/workflow.sh build    | Build the project"
   echo "> 2. ./scripts/workflow.sh test     | Run tests on this project"
-  echo "> 4. ./scripts/workflow.sh release  | Prepare project for release"
-  echo "> 5. ./scripts/workflow.sh help     | Display this help menu"
+  echo "> 3. ./scripts/workflow.sh release  | Prepare project for release"
+  echo "> 4. ./scripts/workflow.sh help     | Display this help menu"
 }
 
 function check() {
@@ -21,10 +21,30 @@ function check() {
     command_is_present "gcc"
     command_is_present "pip3"
     command_is_present "upx"
+    command_is_present "python3.6"
   fi
   if [ "${1}" == "test" ]; then
     command_is_present "pip3"
+    command_is_present "python3.6"
   fi
+}
+
+function setup() {
+  # Constants
+  HOOK_DIR=${BASE_PROJECT}/.git/hooks
+
+  # Create directory
+  mkdir -p "${HOOK_DIR}"
+
+  # Remove all old hooks before anything
+  log_success "remove old hooks"
+  rm -f "${HOOK_DIR}/commit-msg"
+  rm -f "${HOOK_DIR}/pre-commit"
+
+  # Copy new ones
+  log_success "copy new hooks"
+  cp "${RELATIVE_DIR}/hook-commit-msg.sh" "${HOOK_DIR}/commit-msg"
+  cp "${RELATIVE_DIR}/hook-pre-commit.sh" "${HOOK_DIR}/pre-commit"
 }
 
 function build() {
@@ -55,6 +75,9 @@ else
   case "${arg}" in
     help)
       help
+      ;;
+    setup)
+      setup
       ;;
     build)
       check "build"

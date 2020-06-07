@@ -45,6 +45,13 @@ def test_include_template():
     assert result.output == 'Hello world: 1\n'
 
 
+def test_advanced_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/advanced.tpl'], env={'simple': '1', 'foo': 'bar'})
+    assert result.exit_code == 0
+    assert result.output == '1\nfoobar\ndefined\n\n'
+
+
 def test_output_file():
     runner = CliRunner()
     result = runner.invoke(main, args=['-o', '/tmp/output', 'tests/fixtures/simple.tpl'], env={'simple': '1'})

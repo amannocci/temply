@@ -17,6 +17,19 @@ def test_wrong_template():
     assert 'Must be a regular file' in result.stdout
 
 
+def test_missing_env():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/simple.tpl'], env={})
+    assert result.exit_code == 1
+
+
+def test_missing_env_allowed():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--allow-missing', 'tests/fixtures/simple.tpl'], env={})
+    assert result.exit_code == 0
+    assert result.output == 'Hello world: \n'
+
+
 def test_simple_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['tests/fixtures/simple.tpl'], env={'simple': '1'})

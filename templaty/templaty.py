@@ -8,8 +8,11 @@ from path import Path
 
 @click.command('templaty')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
+@click.option('-o', '--output-file', help='Output file path.', type=click.Path())
 @click.argument('input_file')
-def main(allow_missing, input_file):
+def main(allow_missing, output_file, input_file):
+    """Render jinja2 templates on the command line with environment variables."""
+
     # Check template path is a regular file
     template_path = Path(input_file)
     if not template_path.isfile():
@@ -27,4 +30,10 @@ def main(allow_missing, input_file):
         undefined=undefine_behaviour
     )
     template = env.get_template(str(template_path.name))
-    click.echo(template.render(**os.environ))
+    rendering = template.render(**os.environ)
+
+    # Stdout or file
+    if output_file:
+        Path(output_file).write_text(rendering)
+    else:
+        click.echo(rendering)

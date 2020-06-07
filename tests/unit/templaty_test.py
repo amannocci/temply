@@ -22,3 +22,10 @@ def test_simple_template():
     result = runner.invoke(main, args=['tests/fixtures/simple.tpl'], env={'simple': '1'})
     assert result.exit_code == 0
     assert result.output == 'Hello world: 1\n'
+
+
+def test_include_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/include.tpl'], env={'simple': '1'})
+    assert result.exit_code == 0
+    assert result.output == 'Hello world: 1\n'

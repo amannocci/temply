@@ -52,6 +52,13 @@ def test_advanced_template():
     assert result.output == '1\nfoobar\ndefined\n\n'
 
 
+def test_doc_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/doc.tpl'], env={'variable': 'foo', 'another_one': 'bar'})
+    assert result.exit_code == 0
+    assert result.output == "variable = 'foo'\nanother_one = 'bar'\ndefault_var = 'default'\n"
+
+
 def test_output_file():
     runner = CliRunner()
     result = runner.invoke(main, args=['-o', '/tmp/output', 'tests/fixtures/simple.tpl'], env={'simple': '1'})

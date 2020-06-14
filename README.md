@@ -70,6 +70,7 @@ the filesystem.
 ```text
 variable = '{{ variable }}'
 another_one = '{{ another_one }}'
+default_var = '{{ default_missing_var | default("default") }}'
 ```
 
 * Then launch the command below to render.
@@ -83,6 +84,73 @@ variable=foo another_one=bar templaty -o /path/to/template.yml /path/to/template
 ```yaml
 variable = 'foo'
 another_one = 'bar'
+default_var = 'default'
+```
+
+## How to render an advanced configuration
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+{% include "include.yml.tpl" %}
+```
+
+* And another one at `/path/to/include.yml.tpl` with the following content.
+
+```yaml
+foobar="Hello world !"
+```
+
+* Then launch the command below to render.
+
+```bash
+templaty -o /path/to/template.yml /path/to/template.yml.tpl
+```
+
+* It will create a file `/path/to/template.yml` with the following content.
+
+```yaml
+foobar="Hello world !"
+```
+
+## How to render a configuration with missing environment variables.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+missing_var = '{{ missing_var }}'
+```
+
+* Then launch the command below to render.
+
+```bash
+templaty --allow-missing -o /path/to/template.yml /path/to/template.yml.tpl
+```
+
+* It will create a file `/path/to/template.yml` with the following content.
+
+```yaml
+missing_var = ''
+```
+
+## How to render a configuration on stdout.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+foobar="{{ foobar }}"
+```
+
+* Then launch the command below to render.
+
+```bash
+foobar='Hello world !' templaty /path/to/template.yml.tpl
+```
+
+* It will output on stdout the following content.
+
+```yaml
+foobar="Hello world !"
 ```
 
 ## Contributing

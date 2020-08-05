@@ -1,4 +1,4 @@
-# Templaty
+# temply
 
 Render jinja2 templates on the command line with environment variables without python runtime.
 
@@ -13,18 +13,18 @@ Render jinja2 templates on the command line with environment variables without p
 
 ## Setup
 The following steps will ensure your project is cloned properly.
-1. `git clone https://github.com/amannocci/templaty`
-2. `cd templaty && ./scripts/workflow.sh setup`
+1. `git clone https://github.com/amannocci/temply`
+2. `cd temply && ./scripts/workflow.sh setup`
 
 ## Develop
-* To build `templaty` in dev mode you will need to install prerequisites packages.
-* Run the command below to install `templaty` in dev mode into your local environment.
+* To build `temply` in dev mode you will need to install prerequisites packages.
+* Run the command below to install `temply` in dev mode into your local environment.
 
 ```bash
 pip3 install --editable .
 ```
 
-* You can now develop awesome `templaty` features interactively by running `templaty` command.
+* You can now develop awesome `temply` features interactively by running `temply` command.
 
 ## Build
 * To build you have to use the workflow script.
@@ -36,7 +36,7 @@ pip3 install --editable .
 * It will compile project code with the current environment.
 
 ## Test
-* To test `templaty` you have to use the workflow script.
+* To test `temply` you have to use the workflow script.
 * Tests are based on `tox`.
 
 ```bash
@@ -76,7 +76,7 @@ default_var = '{{ default_missing_var | default("default") }}'
 * Then launch the command below to render.
 
 ```bash
-variable=foo another_one=bar templaty -o /path/to/template.yml /path/to/template.yml.tpl
+variable=foo another_one=bar temply -o /path/to/template.yml /path/to/template.yml.tpl
 ```
 
 * It will create a file `/path/to/template.yml` with the following content.
@@ -104,7 +104,7 @@ foobar="Hello world !"
 * Then launch the command below to render.
 
 ```bash
-templaty -o /path/to/template.yml /path/to/template.yml.tpl
+temply -o /path/to/template.yml /path/to/template.yml.tpl
 ```
 
 * It will create a file `/path/to/template.yml` with the following content.
@@ -124,7 +124,7 @@ missing_var = '{{ missing_var }}'
 * Then launch the command below to render.
 
 ```bash
-templaty --allow-missing -o /path/to/template.yml /path/to/template.yml.tpl
+temply --allow-missing -o /path/to/template.yml /path/to/template.yml.tpl
 ```
 
 * It will create a file `/path/to/template.yml` with the following content.
@@ -144,7 +144,7 @@ foobar="{{ foobar }}"
 * Then launch the command below to render.
 
 ```bash
-foobar='Hello world !' templaty /path/to/template.yml.tpl
+foobar='Hello world !' temply /path/to/template.yml.tpl
 ```
 
 * It will output on stdout the following content.
@@ -157,4 +157,4 @@ foobar="Hello world !"
 If you find this project useful here's how you can help :
 
 * Send a Pull Request with your awesome new features and bug fixed
-* Be a part of the ommunity and help resolve [Issues](https://github.com/amannocci/templaty/issues)
+* Be a part of the ommunity and help resolve [Issues](https://github.com/amannocci/temply/issues)

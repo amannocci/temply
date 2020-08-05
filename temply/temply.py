@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 from path import Path
 
 
-@click.command('templaty')
+@click.command('temply')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
 @click.option('-o', '--output-file', help='Output file path.', type=click.Path())
 @click.argument('input_file')

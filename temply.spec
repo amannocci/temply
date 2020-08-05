@@ -2,7 +2,7 @@
 
 block_cipher = None
 
-a = Analysis(['bin/templaty'],
+a = Analysis(['bin/temply'],
              pathex=['.'],
              hiddenimports=[],
              hookspath=None,
@@ -17,7 +17,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='templaty',
+          name='temply',
           debug=False,
           strip=None,
           upx=True,

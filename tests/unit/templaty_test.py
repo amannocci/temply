@@ -1,7 +1,7 @@
 from click.testing import CliRunner
 from path import Path
 
-from templaty.templaty import main
+from temply.temply import main
 
 
 def test_no_template():

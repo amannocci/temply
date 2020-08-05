@@ -50,7 +50,7 @@ function setup() {
 function build() {
   try "clean previous build" rm -rf build/ dist/
   try "install pip3 dependencies" pip3 install -r requirements.txt -r requirements-build.txt
-  try "create a binary executable" pyinstaller templaty.spec
+  try "create a binary executable" pyinstaller temply.spec
 }
 
 function test() {
@@ -59,11 +59,11 @@ function test() {
 }
 
 function release() {
-  current_version=$(grep -oP "__version__ = '(.*)'" "templaty/__init__.py" | grep -oP "[0-9\.-]+[a-z]*")
+  current_version=$(grep -oP "__version__ = '(.*)'" "temply/__init__.py" | grep -oP "[0-9\.-]+[a-z]*")
   echo "Current version: ${current_version}"
   echo -n "New version: "
   read -r new_version
-  sed -i "s/${current_version}/${new_version}/g" "templaty/__init__.py"
+  sed -i "s/${current_version}/${new_version}/g" "temply/__init__.py"
 }
 
 # Parse argument

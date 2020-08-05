@@ -50,17 +50,17 @@ except Exception as e:
             install_requires.extend(value)
 
 setup(
-    name='templaty',
-    version=find_version("templaty", "__init__.py"),
+    name='temply',
+    version=find_version("temply", "__init__.py"),
     description='Render jinja2 templates on the command line with shell environment variables.',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    url='https://github.com/amannocci/templaty',
+    url='https://github.com/amannocci/temply',
     project_urls={
-        'Documentation': 'https://github.com/amannocci/templaty',
-        'Changelog': 'https://github.com/amannocci/templaty/CHANGELOG.md',
-        'Source': 'https://github.com/amannocci/templaty',
-        'Tracker': 'https://github.com/amannocci/templaty/issues'
+        'Documentation': 'https://github.com/amannocci/temply',
+        'Changelog': 'https://github.com/amannocci/temply/CHANGELOG.md',
+        'Source': 'https://github.com/amannocci/temply',
+        'Tracker': 'https://github.com/amannocci/temply/issues'
     },
     author="amannocci",
     author_email="adrien.mannocci@gmail.com",
@@ -71,7 +71,7 @@ setup(
     tests_require=tests_require,
     python_requires='>=3.6',
     entry_points={
-        'console_scripts': ['templaty=templaty.templaty:main']
+        'console_scripts': ['temply=temply.temply:main']
     },
     classifiers=[
         'Intended Audience :: Developers',

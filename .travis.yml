@@ -1,8 +1,17 @@
 language: python
 python:
-  - "3.6"
+- '3.6'
 before_install:
-  - sudo apt-get -y install upx
+- sudo apt-get -y install upx
 script:
-  - ./scripts/workflow.sh test
-  - ./scripts/workflow.sh build
+- "./scripts/workflow.sh test"
+- "./scripts/workflow.sh build"
+deploy:
+  provider: releases
+  api_key:
+    secure: aJz3duT9UYepaj1Tz+Ld5jxuCGHm3rXEKt2VHzBTd3Hl1VP/CBW8trhM8wfRm6fodsGEF5vmTA3/44KKTtKLE+8ReFci65GWkExMTILqt3gDXn9AgAI8pXjZCgjbuhYyBi8uwnvdWEeE/+FRzeJktLXH1mcJBCLBHK5rewOR5ItTh57LkEOS2rs9euVY+ZVI7aHUuxrUtyRd6uoB/J/5NOfHAK9HGZ9cBqcHcvMoOhjr7zu9NvZGp7ZSmubCuEP0xvihKxBM4wn5rsyIEArBSEZHxSR5cJlqbT3eSUF804opCfsDLF03kPS3luSmtdSLegsHr9N5qi5alChhLemu3vkLQlrO4U3LQJ7Y24lvShmz/VCmWsOiJRXEopnn3k0oqevb9iRo3IGrNS+NKbaxnzYrYJZaDp9Fnc5pjtPTSP1UaxVFhgOPii3Jn7WqEfTm3sZLcoxngUtRwGzFnnjloKzVoAf0nEV34Vb4s3N3tR4jZgxsu58KGbINd7n+eM56EPRHE1oUS4gzjktoM9zNRciS8KC7QN08bfSiLgiKc0FI+r5PoDk5OBpqmpgatVcG4i8HVQPl1z06ILq4fiR+cai7x5/irH+u4cB11hEMDDduy48qAd3fDrVQ7pS5uXXs86Bi73XmEdpnsxKeZjtpJVG3gsL6feYXlHii2TeKPeM=
+  file: dist/temply
+  on:
+    repo: amannocci/temply
+  skip_cleanup: 'true'
+  tags: true

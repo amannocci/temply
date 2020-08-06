@@ -1,6 +1,11 @@
 # temply
+[![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=master)](https://travis-ci.com/github/amannocci/temply)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Render jinja2 templates on the command line with environment variables without python runtime.
+*Render jinja2 templates on the command line with environment variables without python runtime.*
+* [Source](https://github.com/amannocci/temply)
+* [Issues](https://github.com/amannocci/temply/issues)
+* [Contact](mailto:adrien.mannocci@gmail.com)
 
 ## Prerequisites
 * [Python 3.6](https://docs.python.org/3/) for development.

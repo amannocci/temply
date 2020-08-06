@@ -13,4 +13,5 @@ deploy:
   file: dist/temply
   on:
     repo: amannocci/temply
+    tags: true
   skip_cleanup: 'true'

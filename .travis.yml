@@ -1,0 +1,6 @@
+language: python
+python:
+  - "3.6"
+script:
+  - ./scripts/workflow.sh test
+  - ./scripts/workflow.sh build

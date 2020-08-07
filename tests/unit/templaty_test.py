@@ -59,6 +59,13 @@ def test_doc_template():
     assert result.output == "variable = 'foo'\nanother_one = 'bar'\ndefault_var = 'default'\n"
 
 
+def test_json_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/json.tpl'], env={'json_var': '[]'})
+    assert result.exit_code == 0
+    assert result.output == "[]\n"
+
+
 def test_output_file():
     runner = CliRunner()
     result = runner.invoke(main, args=['-o', '/tmp/output', 'tests/fixtures/simple.tpl'], env={'simple': '1'})

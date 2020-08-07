@@ -1,0 +1,1 @@
+{{ json_var | from_json }}

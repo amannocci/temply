@@ -1,10 +1,13 @@
+import json
 import os
 
 import click
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 from path import Path
+
 from . import __version__
+
 
 @click.command('temply')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
@@ -25,11 +28,14 @@ def main(allow_missing, output_file, input_file):
     else:
         undefine_behaviour = jinja2.StrictUndefined
 
-    # Render template
+    # Setup env
     env = Environment(
         loader=FileSystemLoader(template_path.parent.abspath()),
         undefined=undefine_behaviour
     )
+    env.filters['from_json'] = from_json
+
+    # Render template
     template = env.get_template(str(template_path.name))
     rendering = template.render(**os.environ)
 
@@ -38,3 +44,8 @@ def main(allow_missing, output_file, input_file):
         Path(output_file).write_text(rendering)
     else:
         click.echo(rendering)
+
+
+@jinja2.evalcontextfilter
+def from_json(eval_ctx, value):
+    return json.loads(value)

@@ -54,7 +54,7 @@ function build() {
 }
 
 function test() {
-  try "install pip3 dependencies" pip3 install -r requirements-tests.txt
+  try "install pip3 dependencies" pip3 install -r requirements.txt -r requirements-tests.txt
   try "run tests" tox
 }
 

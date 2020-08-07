@@ -3,6 +3,7 @@ python:
 - '3.6'
 before_install:
 - sudo apt-get -y install upx
+- pip install setuptools --upgrade
 script:
 - "./scripts/workflow.sh test"
 - "./scripts/workflow.sh build"

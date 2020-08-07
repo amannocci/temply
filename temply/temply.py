@@ -4,11 +4,12 @@ import click
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 from path import Path
-
+from . import __version__
 
 @click.command('temply')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
 @click.option('-o', '--output-file', help='Output file path.', type=click.Path())
+@click.version_option(f'{__version__}')
 @click.argument('input_file')
 def main(allow_missing, output_file, input_file):
     """Render jinja2 templates on the command line with environment variables."""

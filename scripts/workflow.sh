@@ -17,16 +17,21 @@ function help() {
 
 function check() {
   log_action "Checking if needed commands are installs"
-  if [ "${1}" == "build" ]; then
-    command_is_present "gcc"
-    command_is_present "pip3"
-    command_is_present "upx"
-    command_is_present "python3.6"
-  fi
-  if [ "${1}" == "test" ]; then
-    command_is_present "pip3"
-    command_is_present "python3.6"
-  fi
+  case "${1}" in
+    build)
+      command_is_present "gcc"
+      command_is_present "pip3"
+      command_is_present "upx"
+      command_is_present "python3.6"
+      ;;
+    test)
+      command_is_present "pip3"
+      command_is_present "python3.6"
+      ;;
+    *)
+      echo "Unknown argument: ${arg}"
+      ;;
+  esac
 }
 
 function setup() {

@@ -33,7 +33,8 @@ def main(allow_missing, output_file, input_file):
         loader=FileSystemLoader(template_path.parent.abspath()),
         undefined=undefine_behaviour
     )
-    env.filters['from_json'] = from_json
+    env.filters['from_json'] = _from_json
+    env.filters['fromjson'] = _from_json
 
     # Render template
     template = env.get_template(str(template_path.name))
@@ -47,5 +48,5 @@ def main(allow_missing, output_file, input_file):
 
 
 @jinja2.evalcontextfilter
-def from_json(eval_ctx, value):
+def _from_json(ctx, value):
     return json.loads(value)

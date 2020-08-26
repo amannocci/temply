@@ -158,6 +158,26 @@ foobar='Hello world !' temply /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
+## How to render a json environment variable.
+
+* Create a file where you want `/path/to/template.json.tpl` with the following content.
+
+```text
+{{ json_var | fromjson }}
+```
+
+* Then launch the command below to render.
+
+```bash
+json_var='["string"]' temply /path/to/template.json.tpl
+```
+
+* It will output on stdout the following content.
+
+```json
+["string"]
+```
+
 ## Contributing
 If you find this project useful here's how you can help :
 

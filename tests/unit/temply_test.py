@@ -63,7 +63,7 @@ def test_json_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['tests/fixtures/json.tpl'], env={'json_var': '[]'})
     assert result.exit_code == 0
-    assert result.output == "[]\n"
+    assert result.output == "[]\n[]\n"
 
 
 def test_output_file():

@@ -66,6 +66,13 @@ def test_json_template():
     assert result.output == "[]\n[]\n"
 
 
+def test_envs_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['tests/fixtures/envs.tpl'], env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
+    assert result.exit_code == 0
+    assert result.output == "BAR = bar\nFOO = foo\n\n"
+
+
 def test_output_file():
     runner = CliRunner()
     result = runner.invoke(main, args=['-o', '/tmp/output', 'tests/fixtures/simple.tpl'], env={'simple': '1'})

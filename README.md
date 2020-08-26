@@ -158,7 +158,7 @@ foobar='Hello world !' temply /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
-## How to render a json environment variable.
+## How to render a configuration with a json environment variable.
 
 * Create a file where you want `/path/to/template.json.tpl` with the following content.
 
@@ -176,6 +176,29 @@ json_var='["string"]' temply /path/to/template.json.tpl
 
 ```json
 ["string"]
+```
+
+## How to render a configuration with a wildcard environment variable.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+{% for key, value in environment('MY_') -%}
+{{ key }} = {{ value }}
+{% endfor %}
+```
+
+* Then launch the command below to render.
+
+```bash
+MY_FOO=foo MY_BAR=bar temply /path/to/template.yml.tpl
+```
+
+* It will output on stdout the following content.
+
+```yaml
+BAR = bar
+FOO = foo
 ```
 
 ## Contributing

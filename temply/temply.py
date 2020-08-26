@@ -38,6 +38,7 @@ def main(allow_missing, output_file, input_file):
 
     # Render template
     template = env.get_template(str(template_path.name))
+    template.globals['environment'] = _get_environment
     rendering = template.render(**os.environ)
 
     # Stdout or file
@@ -50,3 +51,10 @@ def main(allow_missing, output_file, input_file):
 @jinja2.evalcontextfilter
 def _from_json(ctx, value):
     return json.loads(value)
+
+
+@jinja2.contextfunction
+def _get_environment(ctx, prefix=''):
+    for key, value in sorted(ctx.items()):
+        if not callable(value) and key.startswith(prefix):
+            yield key[len(prefix):], value

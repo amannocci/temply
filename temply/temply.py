@@ -3,7 +3,7 @@ import os
 
 import click
 import jinja2
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, DictLoader
 from path import Path
 
 from . import __version__
@@ -11,16 +11,12 @@ from . import __version__
 
 @click.command('temply')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
+@click.option('--keep-template', help='Keep original template file.', is_flag=True)
 @click.option('-o', '--output-file', help='Output file path.', type=click.Path())
 @click.version_option(f'{__version__}')
-@click.argument('input_file')
-def main(allow_missing, output_file, input_file):
+@click.argument('input_file', required=False)
+def main(allow_missing, keep_template, output_file, input_file):
     """Render jinja2 templates on the command line with environment variables."""
-
-    # Check template path is a regular file
-    template_path = Path(input_file)
-    if not template_path.isfile():
-        raise click.FileError(template_path.abspath(), 'Must be a regular file')
 
     # Define undefine behaviour
     if allow_missing:
@@ -28,18 +24,44 @@ def main(allow_missing, output_file, input_file):
     else:
         undefine_behaviour = jinja2.StrictUndefined
 
+    # Decide if we use stdin or regular file
+    if input_file:
+        # Check template path is a regular file
+        template_path = Path(input_file)
+        if not template_path.isfile():
+            raise click.FileError(template_path.abspath(), 'Must be a regular file')
+
+        # Template name
+        template_name = str(template_path.name)
+
+        env = Environment(
+            loader=FileSystemLoader(template_path.parent.abspath()),
+            undefined=undefine_behaviour
+        )
+    else:
+        # Template name
+        template_name = 'stdin_template'
+
+        # Setup environment
+        env = Environment(
+            loader=DictLoader({template_name: click.get_text_stream('stdin').read()}),
+        )
+
     # Setup env
-    env = Environment(
-        loader=FileSystemLoader(template_path.parent.abspath()),
-        undefined=undefine_behaviour
-    )
     env.filters['from_json'] = _from_json
     env.filters['fromjson'] = _from_json
 
     # Render template
-    template = env.get_template(str(template_path.name))
+    template = env.get_template(template_name)
     template.globals['environment'] = _get_environment
-    rendering = template.render(**os.environ)
+    try:
+        rendering = template.render(**os.environ)
+    except jinja2.UndefinedError as e:
+        raise Exception(e)
+
+    # Remove template
+    if input_file and not keep_template:
+        Path(input_file).remove()
 
     # Stdout or file
     if output_file:

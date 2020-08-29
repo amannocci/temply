@@ -15,6 +15,7 @@
 * Render jinja2 template using command line without python environment.
 * Standalone executable with jinja2 templating engine.
 * Support inclusion template rendering.
+* Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
 
 ## Setup
 The following steps will ensure your project is cloned properly.
@@ -90,6 +91,21 @@ variable=foo another_one=bar temply -o /path/to/template.yml /path/to/template.y
 variable = 'foo'
 another_one = 'bar'
 default_var = 'default'
+```
+
+## How to render a configuration from stdin
+
+* Launch the command below to render.
+
+```bash
+echo 'Hello {{ name }} !' | name=world temply -o /path/to/template.txt
+```
+
+* It will create a file `/path/to/template.txt` with the following content.
+
+```text
+Hello world !
+
 ```
 
 ## How to render an advanced configuration
@@ -200,6 +216,11 @@ MY_FOO=foo MY_BAR=bar temply /path/to/template.yml.tpl
 BAR = bar
 FOO = foo
 ```
+
+## How to render a configuration and keep template after rendering.
+
+* By default, temply will remove template file.
+* If you want to keep template you will have to use the flag `--keep-template`
 
 ## Contributing
 If you find this project useful here's how you can help :

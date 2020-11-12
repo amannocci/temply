@@ -17,12 +17,14 @@
 * Support inclusion template rendering.
 * Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
 
-## Setup
+## Develop
+
+### Setup
 The following steps will ensure your project is cloned properly.
 1. `git clone https://github.com/amannocci/temply`
 2. `cd temply && ./scripts/workflow.sh setup`
 
-## Develop
+### Develop
 * To build `temply` in dev mode you will need to install prerequisites packages.
 * Run the command below to install `temply` in dev mode into your local environment.
 
@@ -32,7 +34,7 @@ pip3 install --editable .
 
 * You can now develop awesome `temply` features interactively by running `temply` command.
 
-## Build
+### Build
 * To build you have to use the workflow script.
 
 ```bash
@@ -41,7 +43,7 @@ pip3 install --editable .
 
 * It will compile project code with the current environment.
 
-## Test
+### Test
 * To test `temply` you have to use the workflow script.
 * Tests are based on `tox`.
 
@@ -49,14 +51,16 @@ pip3 install --editable .
 ./scripts/workflow.sh test
 ```
 
-## Release (or prepare)
+### Release (or prepare)
 * To release or prepare a release you have to use the workflow script.
 
 ```bash
 ./scripts/workflow.sh release
 ```
 
-## How it works
+## Usage
+
+### How it works
 
 * We use `PyInstaller` to create a standalone executable.
 * This means you don't need python runtime to run it.
@@ -68,7 +72,7 @@ the filesystem.
 * It will then attempt to render the template and create a file or display on stdout.
 * You can use any [jinja2](https://jinja.palletsprojects.com/en/2.11.x/templates/) syntax.
 
-## How to render a simple configuration
+### How to render a simple configuration
 
 * Before anything, note that you can render any file with any extension because jinja2 is based on text templating.
 * Create a file where you want `/path/to/template.yml.tpl` with the following content.
@@ -93,7 +97,7 @@ another_one = 'bar'
 default_var = 'default'
 ```
 
-## How to render a configuration from stdin
+### How to render a configuration from stdin
 
 * Launch the command below to render.
 
@@ -108,7 +112,7 @@ Hello world !
 
 ```
 
-## How to render an advanced configuration
+### How to render an advanced configuration
 
 * Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -134,7 +138,7 @@ temply -o /path/to/template.yml /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
-## How to render a configuration with missing environment variables.
+### How to render a configuration with missing environment variables.
 
 * Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -154,7 +158,7 @@ temply --allow-missing -o /path/to/template.yml /path/to/template.yml.tpl
 missing_var = ''
 ```
 
-## How to render a configuration on stdout.
+### How to render a configuration on stdout.
 
 * Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -174,7 +178,7 @@ foobar='Hello world !' temply /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
-## How to render a configuration with a json environment variable.
+### How to render a configuration with a json environment variable.
 
 * Create a file where you want `/path/to/template.json.tpl` with the following content.
 
@@ -194,7 +198,7 @@ json_var='["string"]' temply /path/to/template.json.tpl
 ["string"]
 ```
 
-## How to render a configuration with a wildcard environment variable.
+### How to render a configuration with a wildcard environment variable.
 
 * Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -217,7 +221,7 @@ BAR = bar
 FOO = foo
 ```
 
-## How to render a configuration and keep template after rendering.
+### How to render a configuration and keep template after rendering.
 
 * By default, temply will remove template file.
 * If you want to keep template you will have to use the flag `--keep-template`

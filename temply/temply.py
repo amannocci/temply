@@ -34,18 +34,17 @@ def main(allow_missing, keep_template, output_file, input_file):
         # Template name
         template_name = str(template_path.name)
 
-        env = Environment(
-            loader=FileSystemLoader(template_path.parent.abspath()),
-            undefined=undefine_behaviour
-        )
+        # Set loader
+        loader = FileSystemLoader(template_path.parent.abspath())
     else:
         # Template name
         template_name = 'stdin_template'
 
-        # Setup environment
-        env = Environment(
-            loader=DictLoader({template_name: click.get_text_stream('stdin').read()}),
-        )
+        # Set loader
+        loader = DictLoader({template_name: click.get_text_stream('stdin').read()})
+
+    # Setup environment
+    env = Environment(loader=loader, undefined=undefine_behaviour)
 
     # Setup env
     env.filters['from_json'] = _from_json

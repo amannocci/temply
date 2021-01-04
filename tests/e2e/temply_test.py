@@ -18,6 +18,12 @@ def test_wrong_template():
     assert 'Must be a regular file' in result.stdout
 
 
+def test_stdin_missing_env():
+    runner = CliRunner()
+    result = runner.invoke(main, input='Hello {{ name }} !', env={})
+    assert result.exit_code == 1
+
+
 def test_missing_env():
     runner = CliRunner()
     result = runner.invoke(main, args=['--keep-template', 'tests/fixtures/simple.tpl'], env={})

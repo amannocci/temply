@@ -4,24 +4,11 @@ from path import Path
 from temply.temply import main
 
 
-def test_stdin_template():
-    runner = CliRunner()
-    result = runner.invoke(main, input='Hello {{ name }} !', env={'name': 'world'})
-    assert result.exit_code == 0
-    assert result.output == 'Hello world !\n'
-
-
-def test_wrong_template():
+def test_wrong_file_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['unknown'])
     assert result.exit_code == 1
     assert 'Must be a regular file' in result.stdout
-
-
-def test_stdin_missing_env():
-    runner = CliRunner()
-    result = runner.invoke(main, input='Hello {{ name }} !', env={})
-    assert result.exit_code == 1
 
 
 def test_missing_env():
@@ -30,11 +17,32 @@ def test_missing_env():
     assert result.exit_code == 1
 
 
-def test_missing_env_allowed():
+def test_allow_missing_env():
     runner = CliRunner()
     result = runner.invoke(main, args=['--keep-template', '--allow-missing', 'tests/fixtures/simple.tpl'], env={})
     assert result.exit_code == 0
     assert result.output == 'Hello world: \n'
+
+
+def test_keep_template():
+    Path('/tmp/output.tpl').write_text('Hello {{ name }} !')
+
+    runner = CliRunner()
+    result = runner.invoke(main, args=['/tmp/output.tpl'],
+                           env={'name': 'world'})
+    assert result.exit_code == 0
+    assert result.output == "Hello world !\n"
+    assert not Path('/tmp/output.tpl').exists()
+
+
+def test_output_file():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', '-o', '/tmp/output', 'tests/fixtures/simple.tpl'],
+                           env={'simple': '1'})
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert Path('/tmp/output').read_text() == 'Hello world: 1'
+    Path('/tmp/output').remove()
 
 
 def test_simple_template():
@@ -88,24 +96,3 @@ def test_envdir_template():
                            env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
     assert result.output == "BAR = bar\nFOO = bar\n\n"
     assert result.exit_code == 0
-
-
-def test_keep_template():
-    Path('/tmp/output.tpl').write_text('Hello {{ name }} !')
-
-    runner = CliRunner()
-    result = runner.invoke(main, args=['/tmp/output.tpl'],
-                           env={'name': 'world'})
-    assert result.exit_code == 0
-    assert result.output == "Hello world !\n"
-    assert not Path('/tmp/output.tpl').exists()
-
-
-def test_output_file():
-    runner = CliRunner()
-    result = runner.invoke(main, args=['--keep-template', '-o', '/tmp/output', 'tests/fixtures/simple.tpl'],
-                           env={'simple': '1'})
-    assert result.exit_code == 0
-    assert result.output == ''
-    assert Path('/tmp/output').read_text() == 'Hello world: 1'
-    Path('/tmp/output').remove()

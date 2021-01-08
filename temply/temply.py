@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, DictLoader
 from path import Path
 
 from . import __version__
+from .loaders import EnvLoader
 
 
 @click.command('temply')
@@ -53,8 +54,11 @@ def main(allow_missing, keep_template, output_file, input_file):
     # Render template
     template = env.get_template(template_name)
     template.globals['environment'] = _get_environment
+
+    # Compute env
+    envs = EnvLoader().load()
     try:
-        rendering = template.render(**os.environ)
+        rendering = template.render(**envs)
     except jinja2.UndefinedError as e:
         raise Exception(e)
 

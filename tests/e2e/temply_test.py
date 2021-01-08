@@ -82,6 +82,14 @@ def test_envs_template():
     assert result.output == "BAR = bar\nFOO = foo\n\n"
 
 
+def test_envdir_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', '--envdir', 'tests/fixtures/envdir', 'tests/fixtures/envs.tpl'],
+                           env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
+    assert result.output == "BAR = bar\nFOO = bar\n\n"
+    assert result.exit_code == 0
+
+
 def test_keep_template():
     Path('/tmp/output.tpl').write_text('Hello {{ name }} !')
 

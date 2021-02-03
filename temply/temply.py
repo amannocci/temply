@@ -1,5 +1,4 @@
 import json
-import os
 
 import click
 import jinja2
@@ -7,17 +6,18 @@ from jinja2 import Environment, FileSystemLoader, DictLoader
 from path import Path
 
 from . import __version__
-from .loaders import EnvLoader, EnvdirLoader
+from .loaders import EnvLoader, EnvdirLoader, DotenvLoader
 
 
 @click.command('temply')
 @click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
 @click.option('--keep-template', help='Keep original template file.', is_flag=True)
 @click.option('--envdir', help='Load environment variables from directory', type=click.Path())
+@click.option('--dotenv', help='Load environment variables from dotenv file', type=click.Path())
 @click.option('-o', '--output-file', help='Output file path.', type=click.Path())
 @click.version_option(f'{__version__}')
 @click.argument('input_file', required=False)
-def main(allow_missing, keep_template, envdir, output_file, input_file):
+def main(allow_missing, keep_template, envdir, dotenv, output_file, input_file):
     """Render jinja2 templates on the command line with environment variables."""
 
     # Define undefine behaviour
@@ -60,6 +60,8 @@ def main(allow_missing, keep_template, envdir, output_file, input_file):
     envs = EnvLoader().load()
     if envdir:
         envs = EnvdirLoader(envdir).load(envs)
+    if dotenv:
+        envs = DotenvLoader(dotenv).load(envs)
     try:
         rendering = template.render(**envs)
     except jinja2.UndefinedError as e:

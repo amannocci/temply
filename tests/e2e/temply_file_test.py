@@ -96,3 +96,19 @@ def test_envdir_template():
                            env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
     assert result.output == "BAR = bar\nFOO = bar\n\n"
     assert result.exit_code == 0
+
+
+def test_dotenv_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', '--dotenv', 'tests/fixtures/dotenv', 'tests/fixtures/envs.tpl'],
+                           env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
+    assert result.output == "BAR = foobar\nFOO = foo\n\n"
+    assert result.exit_code == 0
+
+
+def test_wrong_dotenv_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', '--dotenv', 'tests/fixtures/wrong_dotenv', 'tests/fixtures/envs.tpl'],
+                           env={'MY_FOO': 'foo', 'MY_BAR': 'bar'})
+    assert "Must be a regular file" in result.output
+    assert result.exit_code == 1

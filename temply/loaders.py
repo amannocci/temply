@@ -2,6 +2,9 @@ import os
 from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
+import click
+from path import Path
+
 
 class Loader(ABC):
     """Abstract loader"""
@@ -41,4 +44,31 @@ class EnvdirLoader(Loader):
                         ctx[file] = value
                     else:
                         del ctx[file]
+        return ctx
+
+
+class DotenvLoader(Loader):
+    """Environment file loader implementation"""
+
+    def __init__(self, path: str):
+        self.__path = path
+
+    def load(self, ref: Optional[Dict] = None) -> Dict:
+        ctx = ref if ref else dict()
+
+        # Check dotfile is a regular file
+        dotfile_path = Path(self.__path)
+        if not dotfile_path.isfile():
+            raise click.FileError(dotfile_path.abspath(), 'Must be a regular file')
+
+        # Process
+        try:
+            value = dotfile_path.read_text()
+            lines = value.splitlines()
+            for line in lines:
+                key, value = line.split('=', 1)
+                ctx[key] = value
+        except OSError as err:
+            raise click.FileError(dotfile_path.abspath(), err.__str__())
+
         return ctx

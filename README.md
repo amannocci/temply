@@ -2,7 +2,7 @@
 [![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=master)](https://travis-ci.com/github/amannocci/temply)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-*Render jinja2 templates on the command line with environment variables without python runtime.*
+*Render jinja2 templates on the command line without python runtime.*
 * [Source](https://github.com/amannocci/temply)
 * [Issues](https://github.com/amannocci/temply/issues)
 * [Contact](mailto:adrien.mannocci@gmail.com)
@@ -16,6 +16,7 @@
 * Standalone executable with jinja2 templating engine.
 * Support inclusion template rendering.
 * Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
+* Support loading from environment va
 
 ## Develop
 
@@ -219,6 +220,48 @@ MY_FOO=foo MY_BAR=bar temply /path/to/template.yml.tpl
 ```yaml
 BAR = bar
 FOO = foo
+```
+
+### How to render a configuration with an envdir.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+foobar="{{ FOOBAR }}"
+```
+
+* Then create an envdir with a file named `FOOBAR` with `foobar` as content.
+* Then launch the command below to render.
+
+```bash
+temply --envdir /path/to/envdir /path/to/template.yml.tpl
+```
+
+* It will output on stdout the following content.
+
+```yaml
+foobar = foobar
+```
+
+### How to render a configuration with a dotenv file.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+foobar="{{ FOOBAR }}"
+```
+
+* Then create a dotenv file named `dotenv` with `FOOBAR=foobar` as content.
+* Then launch the command below to render.
+
+```bash
+temply --dotenv /path/to/dotenv /path/to/template.yml.tpl
+```
+
+* It will output on stdout the following content.
+
+```yaml
+foobar = foobar
 ```
 
 ### How to render a configuration and keep template after rendering.

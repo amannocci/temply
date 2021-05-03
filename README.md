@@ -264,6 +264,36 @@ temply --dotenv /path/to/dotenv /path/to/template.yml.tpl
 foobar = foobar
 ```
 
+### How to render a configuration with a json file.
+
+* Create a file where you want `/path/to/template.yml.tpl` with the following content.
+
+```text
+foo="{{ FOO }}"
+bar="{{ BAR }}"
+```
+
+* Then create a json file named `file.json` with the following content.
+```json
+[
+  {"key": "FOO", "value": "foo"},
+  {"key": "BAR", "value": "bar"}
+]
+```  
+
+* Then launch the command below to render.
+
+```bash
+temply --json-file /path/to/file.json /path/to/template.yml.tpl
+```
+
+* It will output on stdout the following content.
+
+```yaml
+foo="foo"
+bar="bar"
+```
+
 ### How to render a configuration and keep template after rendering.
 
 * By default, temply will remove template file.

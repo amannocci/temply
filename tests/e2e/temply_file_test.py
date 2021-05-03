@@ -106,6 +106,13 @@ def test_dotenv_template():
     assert result.exit_code == 0
 
 
+def test_json_file_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', '--json-file', 'tests/fixtures/envs.json', 'tests/fixtures/envs.tpl'])
+    assert result.output == "key.secret = value-of-secret\n\n"
+    assert result.exit_code == 0
+
+
 def test_wrong_dotenv_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['--keep-template', '--dotenv', 'tests/fixtures/wrong_dotenv', 'tests/fixtures/envs.tpl'],

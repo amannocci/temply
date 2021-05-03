@@ -1,3 +1,4 @@
+import json
 import os
 from abc import ABC, abstractmethod
 from typing import Dict, Optional
@@ -70,5 +71,31 @@ class DotenvLoader(Loader):
                 ctx[key] = value
         except OSError as err:
             raise click.FileError(dotfile_path.abspath(), err.__str__())
+
+        return ctx
+
+
+class JsonFileLoader(Loader):
+    """Environment json file loader implementation"""
+
+    def __init__(self, path: str):
+        self.__path = path
+
+    def load(self, ref: Optional[Dict] = None) -> Dict:
+        ctx = ref if ref else dict()
+
+        # Check json file is a regular file
+        json_file_path = Path(self.__path)
+        if not json_file_path.isfile():
+            raise click.FileError(json_file_path.abspath(), 'Must be a regular file')
+
+        # Process
+        try:
+            values = json.loads(json_file_path.read_text())
+            for val in values:
+                if val.get('key'):
+                    ctx[val.get('key')] = val.get('value')
+        except OSError as err:
+            raise click.FileError(json_file_path.abspath(), err.__str__())
 
         return ctx

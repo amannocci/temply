@@ -185,6 +185,7 @@ foobar="Hello world !"
 
 ```text
 {{ json_var | fromjson }}
+# Or {{ json_var | from_json }}
 ```
 
 * Then launch the command below to render.
@@ -197,6 +198,27 @@ json_var='["string"]' temply /path/to/template.json.tpl
 
 ```json
 ["string"]
+```
+
+### How to render a configuration with a yaml environment variable.
+
+* Create a file where you want `/path/to/template.yaml.tpl` with the following content.
+
+```text
+{{ (yaml_var | fromyaml).foo }}
+# Or {{ (yaml_var | from_yaml).foo }}
+```
+
+* Then launch the command below to render.
+
+```bash
+yaml_var='foo: bar' temply /path/to/template.yaml.tpl
+```
+
+* It will output on stdout the following content.
+
+```text
+bar
 ```
 
 ### How to render a configuration with a wildcard environment variable.

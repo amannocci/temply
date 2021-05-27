@@ -1,3 +1,4 @@
 click==7.1.2
 jinja2==2.11.3
 path==15.1.0
+PyYAML==5.4.1

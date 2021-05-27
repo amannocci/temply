@@ -82,6 +82,19 @@ def test_json_template():
     assert result.output == "[]\n[]\n\n"
 
 
+def test_yaml_template():
+    runner = CliRunner()
+    result = runner.invoke(main, args=['--keep-template', 'tests/fixtures/yaml.tpl'], env={'yaml_var': '''
+    obj:
+      key-one: "val"
+      key-two: "val"
+    arr:
+      - "str"
+    '''})
+    assert result.exit_code == 0
+    assert result.output == "arr:\n- str\nobj:\n  key-one: val\n  key-two: val\narr:\n- str\nobj:\n  key-one: val\n  key-two: val\n\n"
+
+
 def test_envs_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['--keep-template', 'tests/fixtures/envs.tpl'],

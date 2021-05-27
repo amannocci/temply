@@ -2,6 +2,7 @@ import json
 
 import click
 import jinja2
+import yaml
 from jinja2 import Environment, FileSystemLoader, DictLoader
 from path import Path
 
@@ -60,6 +61,10 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
     env.filters['fromjson'] = _from_json
     env.filters['to_json'] = _to_json
     env.filters['tojson'] = _to_json
+    env.filters['from_yaml'] = _from_yaml
+    env.filters['fromyaml'] = _from_yaml
+    env.filters['to_yaml'] = _to_yaml
+    env.filters['toyaml'] = _to_yaml
 
     # Render template
     template = env.get_template(template_name)
@@ -93,7 +98,17 @@ def _from_json(ctx, value):
 
 @jinja2.evalcontextfilter
 def _to_json(ctx, value):
-    return json.dumps(value)
+    return json.dumps(value).strip()
+
+
+@jinja2.evalcontextfilter
+def _from_yaml(ctx, value):
+    return yaml.safe_load(value)
+
+
+@jinja2.evalcontextfilter
+def _to_yaml(ctx, value):
+    return yaml.safe_dump(value).strip()
 
 
 @jinja2.contextfunction

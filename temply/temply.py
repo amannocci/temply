@@ -52,6 +52,8 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
     # Setup env
     env.filters['from_json'] = _from_json
     env.filters['fromjson'] = _from_json
+    env.filters['to_json'] = _to_json
+    env.filters['tojson'] = _to_json
 
     # Render template
     template = env.get_template(template_name)
@@ -81,6 +83,11 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
 @jinja2.evalcontextfilter
 def _from_json(ctx, value):
     return json.loads(value)
+
+
+@jinja2.evalcontextfilter
+def _to_json(ctx, value):
+    return json.dumps(value)
 
 
 @jinja2.contextfunction

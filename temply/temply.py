@@ -47,7 +47,13 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
         loader = DictLoader({template_name: click.get_text_stream('stdin').read()})
 
     # Setup environment
-    env = Environment(loader=loader, undefined=undefine_behaviour)
+    env = Environment(
+        loader=loader,
+        undefined=undefine_behaviour,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True
+    )
 
     # Setup env
     env.filters['from_json'] = _from_json

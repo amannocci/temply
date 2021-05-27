@@ -72,14 +72,14 @@ def test_doc_template():
     result = runner.invoke(main, args=['--keep-template', 'tests/fixtures/doc.tpl'],
                            env={'variable': 'foo', 'another_one': 'bar'})
     assert result.exit_code == 0
-    assert result.output == "variable = 'foo'\nanother_one = 'bar'\ndefault_var = 'default'\n"
+    assert result.output == "variable = 'foo'\nanother_one = 'bar'\ndefault_var = 'default'\n\n"
 
 
 def test_json_template():
     runner = CliRunner()
     result = runner.invoke(main, args=['--keep-template', 'tests/fixtures/json.tpl'], env={'json_var': '[]'})
     assert result.exit_code == 0
-    assert result.output == "[]\n[]\n"
+    assert result.output == "[]\n[]\n\n"
 
 
 def test_envs_template():

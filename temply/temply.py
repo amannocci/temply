@@ -3,7 +3,7 @@ import json
 import click
 import jinja2
 import yaml
-from jinja2 import Environment, FileSystemLoader, DictLoader
+from jinja2 import Environment, FileSystemLoader, DictLoader, pass_eval_context, pass_context
 from path import Path
 
 from . import __version__
@@ -91,27 +91,27 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
         click.echo(rendering)
 
 
-@jinja2.evalcontextfilter
+@pass_eval_context
 def _from_json(ctx, value):
     return json.loads(value)
 
 
-@jinja2.evalcontextfilter
+@pass_eval_context
 def _to_json(ctx, value):
     return json.dumps(value).strip()
 
 
-@jinja2.evalcontextfilter
+@pass_eval_context
 def _from_yaml(ctx, value):
     return yaml.safe_load(value)
 
 
-@jinja2.evalcontextfilter
+@pass_eval_context
 def _to_yaml(ctx, value):
     return yaml.safe_dump(value).strip()
 
 
-@jinja2.contextfunction
+@pass_context
 def _get_environment(ctx, prefix=''):
     for key, value in sorted(ctx.items()):
         if not callable(value) and key.startswith(prefix):

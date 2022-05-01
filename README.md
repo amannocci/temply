@@ -8,8 +8,8 @@
 * [Contact](mailto:adrien.mannocci@gmail.com)
 
 ## Prerequisites
-* [Python 3.6](https://docs.python.org/3/) for development.
-* [Python 3.6 - Pip](https://pypi.org/project/pip/) for development.
+* [Python 3.8](https://docs.python.org/3/) for development.
+* [Python 3.8 - Pip](https://pypi.org/project/pip/) for development.
 
 ## Features
 * Render jinja2 template using command line without python environment.

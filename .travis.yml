@@ -1,6 +1,6 @@
 language: python
 python:
-- '3.6.12'
+- '3.8.13'
 before_install:
 - sudo apt-get -y install upx
 - pip install setuptools --upgrade

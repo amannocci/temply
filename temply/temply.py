@@ -1,12 +1,10 @@
-import json
-
 import click
 import jinja2
-import yaml
-from jinja2 import Environment, FileSystemLoader, DictLoader, pass_eval_context, pass_context
+from jinja2 import Environment, FileSystemLoader, DictLoader
 from path import Path
 
 from . import __version__
+from .filters import from_json, to_json, from_yaml, to_yaml, get_environment
 from .loaders import EnvLoader, EnvdirLoader, DotenvLoader, JsonFileLoader
 
 
@@ -57,18 +55,18 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
     )
 
     # Setup env
-    env.filters['from_json'] = _from_json
-    env.filters['fromjson'] = _from_json
-    env.filters['to_json'] = _to_json
-    env.filters['tojson'] = _to_json
-    env.filters['from_yaml'] = _from_yaml
-    env.filters['fromyaml'] = _from_yaml
-    env.filters['to_yaml'] = _to_yaml
-    env.filters['toyaml'] = _to_yaml
+    env.filters['from_json'] = from_json
+    env.filters['fromjson'] = from_json
+    env.filters['to_json'] = to_json
+    env.filters['tojson'] = to_json
+    env.filters['from_yaml'] = from_yaml
+    env.filters['fromyaml'] = from_yaml
+    env.filters['to_yaml'] = to_yaml
+    env.filters['toyaml'] = to_yaml
 
     # Render template
     template = env.get_template(template_name)
-    template.globals['environment'] = _get_environment
+    template.globals['environment'] = get_environment
 
     # Compute env
     envs = EnvLoader().load()
@@ -89,30 +87,3 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
         Path(output_file).write_text(rendering)
     else:
         click.echo(rendering)
-
-
-@pass_eval_context
-def _from_json(ctx, value):
-    return json.loads(value)
-
-
-@pass_eval_context
-def _to_json(ctx, value):
-    return json.dumps(value).strip()
-
-
-@pass_eval_context
-def _from_yaml(ctx, value):
-    return yaml.safe_load(value)
-
-
-@pass_eval_context
-def _to_yaml(ctx, value):
-    return yaml.safe_dump(value).strip()
-
-
-@pass_context
-def _get_environment(ctx, prefix=''):
-    for key, value in sorted(ctx.items()):
-        if not callable(value) and key.startswith(prefix):
-            yield key[len(prefix):], value

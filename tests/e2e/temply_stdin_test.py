@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from path import Path
+from pathlib import Path
 
 from temply.temply import main
 
@@ -23,4 +23,4 @@ def test_output_file():
     assert result.exit_code == 0
     assert result.output == ''
     assert Path('/tmp/output').read_text() == 'Hello world !'
-    Path('/tmp/output').remove()
+    Path('/tmp/output').unlink()

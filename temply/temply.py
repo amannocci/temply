@@ -1,7 +1,8 @@
+from pathlib import Path
+
 import click
 import jinja2
 from jinja2 import Environment, FileSystemLoader, DictLoader
-from path import Path
 
 from . import __version__
 from .filters import from_json, to_json, from_yaml, to_yaml, get_environment
@@ -30,14 +31,14 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
     if input_file:
         # Check template path is a regular file
         template_path = Path(input_file)
-        if not template_path.isfile():
-            raise click.FileError(template_path.abspath(), 'Must be a regular file')
+        if not template_path.is_file():
+            raise click.FileError(str(template_path.absolute()), 'Must be a regular file')
 
         # Template name
         template_name = str(template_path.name)
 
         # Set loader
-        loader = FileSystemLoader(template_path.parent.abspath())
+        loader = FileSystemLoader(template_path.parent.absolute())
     else:
         # Template name
         template_name = 'stdin_template'
@@ -80,7 +81,7 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
 
     # Remove template
     if input_file and not keep_template:
-        Path(input_file).remove()
+        Path(input_file).unlink()
 
     # Stdout or file
     if output_file:

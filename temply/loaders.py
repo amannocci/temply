@@ -1,10 +1,10 @@
 import json
 import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Dict, Optional
 
 import click
-from path import Path
 
 
 class Loader(ABC):
@@ -59,8 +59,8 @@ class DotenvLoader(Loader):
 
         # Check dotfile is a regular file
         dotfile_path = Path(self.__path)
-        if not dotfile_path.isfile():
-            raise click.FileError(dotfile_path.abspath(), 'Must be a regular file')
+        if not dotfile_path.is_file():
+            raise click.FileError(str(dotfile_path.absolute()), 'Must be a regular file')
 
         # Process
         try:
@@ -70,7 +70,7 @@ class DotenvLoader(Loader):
                 key, value = line.split('=', 1)
                 ctx[key] = value
         except OSError as err:
-            raise click.FileError(dotfile_path.abspath(), err.__str__())
+            raise click.FileError(str(dotfile_path.absolute()), err.__str__())
 
         return ctx
 
@@ -86,8 +86,8 @@ class JsonFileLoader(Loader):
 
         # Check json file is a regular file
         json_file_path = Path(self.__path)
-        if not json_file_path.isfile():
-            raise click.FileError(json_file_path.abspath(), 'Must be a regular file')
+        if not json_file_path.is_file():
+            raise click.FileError(str(json_file_path.absolute()), 'Must be a regular file')
 
         # Process
         try:
@@ -96,6 +96,6 @@ class JsonFileLoader(Loader):
                 if val.get('key'):
                     ctx[val.get('key')] = val.get('value')
         except OSError as err:
-            raise click.FileError(json_file_path.abspath(), err.__str__())
+            raise click.FileError(str(json_file_path.absolute()), err.__str__())
 
         return ctx

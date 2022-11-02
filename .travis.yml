@@ -6,6 +6,7 @@ before_install:
 - sudo apt-get -y install upx
 - pip install poetry setuptools --upgrade
 script:
+- "unset MY_RUBY_HOME"
 - "./scripts/workflow.sh test"
 - "./scripts/workflow.sh build"
 - "./dist/temply --version"

@@ -20,12 +20,11 @@ function command::help() {
 
 function command::check() {
   log::action "Checking if needed commands are installs"
-  command::is_present "python3.8"
+  command::is_present "python3.9"
   command::is_present "pip3"
   case "${1}" in
     build)
       command::is_present "gcc"
-      command::is_present "upx"
       ;;
     test)
       ;;

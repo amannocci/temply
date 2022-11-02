@@ -69,12 +69,12 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     tests_require=tests_require,
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     entry_points={
         'console_scripts': ['temply=temply.temply:main']
     },
     classifiers=[
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.9'
     ]
 )

@@ -4,11 +4,11 @@ python:
 - '3.9.15'
 before_install:
 - sudo apt-get -y install upx
-- pip install poetry setuptools --upgrade
+- pip install poetry
 script:
 - "unset MY_RUBY_HOME"
-- "./scripts/workflow.sh test"
-- "./scripts/workflow.sh build"
+- "./scripts/workflow_linux_amd64 test"
+- "./scripts/workflow_linux_amd64 build"
 - "./dist/temply --version"
 deploy:
   provider: releases

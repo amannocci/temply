@@ -118,7 +118,7 @@ func Build() error {
 		return err
 	}
 	fmt.Println("Create a binary executable")
-	return sh.RunV("poetry", "run", "pyinstaller", "cloud-reaper.spec")
+	return sh.RunV("poetry", "run", "pyinstaller", "temply.spec")
 }
 
 // Run tests on this project

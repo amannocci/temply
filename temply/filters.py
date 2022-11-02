@@ -25,7 +25,7 @@ def to_yaml(ctx, value):
 
 
 @pass_context
-def get_environment(ctx, prefix=''):
+def get_environment(ctx, prefix=""):
     for key, value in sorted(ctx.items()):
         if not callable(value) and key.startswith(prefix):
-            yield key[len(prefix):], value
+            yield key[len(prefix) :], value

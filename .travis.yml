@@ -3,7 +3,7 @@ python:
 - '3.9.15'
 before_install:
 - sudo apt-get -y install upx
-- pip install setuptools --upgrade
+- pip install poetry setuptools --upgrade
 script:
 - "./scripts/workflow.sh test"
 - "./scripts/workflow.sh build"

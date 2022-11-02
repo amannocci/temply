@@ -7,6 +7,7 @@ from typing import Dict, Optional
 import click
 
 
+# pylint: disable=R0903
 class Loader(ABC):
     """Abstract loader"""
 
@@ -16,7 +17,7 @@ class Loader(ABC):
         Load environments variables into ref dict.
         :param ref: ref dict context.
         """
-        return ref or dict()
+        return ref or {}
 
 
 class EnvLoader(Loader):
@@ -39,7 +40,7 @@ class EnvdirLoader(Loader):
         ctx = ref if ref else dict()
         for root, dirs, files in os.walk(self.__path, followlinks=False):
             for file in files:
-                with open(os.path.join(root, file), 'r') as f:
+                with open(os.path.join(root, file), "r") as f:
                     value = f.read().strip("\n\t ").replace("\x00", "\n")
                     if len(value) > 0:
                         ctx[file] = value
@@ -60,14 +61,14 @@ class DotenvLoader(Loader):
         # Check dotfile is a regular file
         dotfile_path = Path(self.__path)
         if not dotfile_path.is_file():
-            raise click.FileError(str(dotfile_path.absolute()), 'Must be a regular file')
+            raise click.FileError(str(dotfile_path.absolute()), "Must be a regular file")
 
         # Process
         try:
             value = dotfile_path.read_text()
             lines = value.splitlines()
             for line in lines:
-                key, value = line.split('=', 1)
+                key, value = line.split("=", 1)
                 ctx[key] = value
         except OSError as err:
             raise click.FileError(str(dotfile_path.absolute()), err.__str__())
@@ -87,14 +88,14 @@ class JsonFileLoader(Loader):
         # Check json file is a regular file
         json_file_path = Path(self.__path)
         if not json_file_path.is_file():
-            raise click.FileError(str(json_file_path.absolute()), 'Must be a regular file')
+            raise click.FileError(str(json_file_path.absolute()), "Must be a regular file")
 
         # Process
         try:
             values = json.loads(json_file_path.read_text())
             for val in values:
-                if val.get('key'):
-                    ctx[val.get('key')] = val.get('value')
+                if val.get("key"):
+                    ctx[val.get("key")] = val.get("value")
         except OSError as err:
             raise click.FileError(str(json_file_path.absolute()), err.__str__())
 

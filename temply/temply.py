@@ -9,15 +9,15 @@ from .filters import from_json, to_json, from_yaml, to_yaml, get_environment
 from .loaders import EnvLoader, EnvdirLoader, DotenvLoader, JsonFileLoader
 
 
-@click.command('temply')
-@click.option('--allow-missing', help='Allow missing variables.', is_flag=True)
-@click.option('--keep-template', help='Keep original template file.', is_flag=True)
-@click.option('--envdir', help='Load environment variables from directory', type=click.Path())
-@click.option('--dotenv', help='Load environment variables from dotenv file', type=click.Path())
-@click.option('--json-file', help='Load environment variables from json file', type=click.Path())
-@click.option('-o', '--output-file', help='Output file path.', type=click.Path())
-@click.version_option(f'{__version__}')
-@click.argument('input_file', required=False)
+@click.command("temply")
+@click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
+@click.option("--keep-template", help="Keep original template file.", is_flag=True)
+@click.option("--envdir", help="Load environment variables from directory", type=click.Path())
+@click.option("--dotenv", help="Load environment variables from dotenv file", type=click.Path())
+@click.option("--json-file", help="Load environment variables from json file", type=click.Path())
+@click.option("-o", "--output-file", help="Output file path.", type=click.Path())
+@click.version_option(f"{__version__}")
+@click.argument("input_file", required=False)
 def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file):
     """Render jinja2 templates on the command line with environment variables."""
 
@@ -32,7 +32,7 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
         # Check template path is a regular file
         template_path = Path(input_file)
         if not template_path.is_file():
-            raise click.FileError(str(template_path.absolute()), 'Must be a regular file')
+            raise click.FileError(str(template_path.absolute()), "Must be a regular file")
 
         # Template name
         template_name = str(template_path.name)
@@ -41,33 +41,29 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
         loader = FileSystemLoader(template_path.parent.absolute())
     else:
         # Template name
-        template_name = 'stdin_template'
+        template_name = "stdin_template"
 
         # Set loader
-        loader = DictLoader({template_name: click.get_text_stream('stdin').read()})
+        loader = DictLoader({template_name: click.get_text_stream("stdin").read()})
 
     # Setup environment
     env = Environment(
-        loader=loader,
-        undefined=undefine_behaviour,
-        trim_blocks=True,
-        lstrip_blocks=True,
-        keep_trailing_newline=True
+        loader=loader, undefined=undefine_behaviour, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True
     )
 
     # Setup env
-    env.filters['from_json'] = from_json
-    env.filters['fromjson'] = from_json
-    env.filters['to_json'] = to_json
-    env.filters['tojson'] = to_json
-    env.filters['from_yaml'] = from_yaml
-    env.filters['fromyaml'] = from_yaml
-    env.filters['to_yaml'] = to_yaml
-    env.filters['toyaml'] = to_yaml
+    env.filters["from_json"] = from_json
+    env.filters["fromjson"] = from_json
+    env.filters["to_json"] = to_json
+    env.filters["tojson"] = to_json
+    env.filters["from_yaml"] = from_yaml
+    env.filters["fromyaml"] = from_yaml
+    env.filters["to_yaml"] = to_yaml
+    env.filters["toyaml"] = to_yaml
 
     # Render template
     template = env.get_template(template_name)
-    template.globals['environment'] = get_environment
+    template.globals["environment"] = get_environment
 
     # Compute env
     envs = EnvLoader().load()

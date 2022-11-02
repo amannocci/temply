@@ -1,0 +1,49 @@
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.poetry]
+name = "temply"
+version = "0.6.0-dev"
+description = "Render jinja2 templates on the command line with shell environment variables."
+authors = ["Adrien Mannocci <adrien.mannocci@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/amannocci/temply"
+documentation = "https://github.com/amannocci/temply"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.9"
+]
+packages = [
+    { include = "temply" }
+]
+
+[tool.poetry.scripts]
+cloud-reaper = "temply.temply:main"
+
+[tool.poetry.urls]
+"Changelog" = "https://github.com/amannocci/temply/CHANGELOG.md"
+"Tracker" = "https://github.com/amannocci/temply/issues"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+click = "8.1.3" # BSD
+jinja2 = "3.1.2" # BSD
+PyYAML = "6.0" # MIT
+pyinstaller = { version = "5.6.2", optional = true } # GPL 2.0
+
+[tool.poetry.dev-dependencies]
+black = "22.10.0" # MIT
+pylint = "2.15.5" # GPL 2.0
+pytest = "7.2.0" # MIT
+poetryup = "0.12.3" # MIT
+
+[tool.poetry.extras]
+build = ["pyinstaller"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

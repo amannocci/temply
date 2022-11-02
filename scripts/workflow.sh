@@ -22,11 +22,10 @@ function command::check() {
   log::action "Checking if needed commands are installs"
   command::is_present "python3.9"
   command::is_present "pip3"
+  command::is_present "poetry"
   case "${1}" in
     build)
       command::is_present "gcc"
-      ;;
-    test)
       ;;
     *)
       echo "Unknown argument: ${arg}"
@@ -59,13 +58,13 @@ function command::generate() {
 
 function command::build() {
   process::try "clean previous build" rm -rf build/ dist/
-  process::try "install pip3 dependencies" pip3 install -r requirements.txt -r requirements-build.txt
-  process::try "create a binary executable" pyinstaller temply.spec
+  process::try "install pip3 dependencies" poetry install -E build
+  process::try "create a binary executable" poetry run pyinstaller temply.spec
 }
 
 function command::test() {
-  process::try "install pip3 dependencies" pip3 install -r requirements.txt -r requirements-tests.txt
-  process::try "run tests" tox
+  process::try "install pip3 dependencies" poetry install -E build
+  process::try "run tests" poetry run pytest
 }
 
 function command::release() {

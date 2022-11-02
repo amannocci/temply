@@ -1,5 +1,5 @@
 # temply
-[![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=master)](https://travis-ci.com/github/amannocci/temply)
+[![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=main)](https://travis-ci.com/github/amannocci/temply)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 *Render jinja2 templates on the command line without python runtime.*
@@ -9,7 +9,10 @@
 
 ## Prerequisites
 * [Python 3.8](https://docs.python.org/3/) for development.
-* [Python 3.8 - Pip](https://pypi.org/project/pip/) for development.
+* [Pip](https://pypi.org/project/pip/) for development.
+* [Poetry](https://python-poetry.org/) for development.
+* [Mage](https://magefile.org/) for workflow.
+* [pre-commit](https://pre-commit.com/) for git management.
 
 ## Features
 * Render jinja2 template using command line without python environment.
@@ -18,46 +21,69 @@
 * Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
 * Support loading from environment va
 
-## Develop
+## Workflow
 
 ### Setup
 The following steps will ensure your project is cloned properly.
 1. `git clone https://github.com/amannocci/temply`
-2. `cd temply && ./scripts/workflow.sh setup`
+2. `cd temply && mage -d scripts -w . env:configure`
 
 ### Develop
 * To build `temply` in dev mode you will need to install prerequisites packages.
 * Run the command below to install `temply` in dev mode into your local environment.
 
 ```bash
-pip3 install --editable .
+mage -d scripts -w . env:configure
 ```
 
 * You can now develop awesome `temply` features interactively by running `temply` command.
 
-### Build
-* To build you have to use the workflow script.
+### Lint
+* To lint you have to use the workflow.
 
 ```bash
-./scripts/workflow.sh build
+mage -d scripts -w . lint
+```
+
+### Format
+* To format you have to use the workflow.
+
+```bash
+mage -d scripts -w . fmt
+```
+
+* It will format the project code using `black`.
+
+### Build
+* To build you have to use the workflow.
+
+```bash
+mage -d scripts -w . build
 ```
 
 * It will compile project code with the current environment.
 
 ### Test
-* To test `temply` you have to use the workflow script.
-* Tests are based on `tox`.
+* To test `temply` you have to use the workflow.
+* Tests are based on `pytest`.
 
 ```bash
-./scripts/workflow.sh test
+mage -d scripts -w . test
 ```
 
-### Release (or prepare)
-* To release or prepare a release you have to use the workflow script.
+### Release
+* To release a new version of the project, you have to use the workflow.
 
 ```bash
-./scripts/workflow.sh release
+mage -d scripts -w . release <release_version> <next_version>
 ```
+
+* It will update version in every needed files.
+* Create a new commit release.
+* Tag this commit release.
+* Update to next version every needed files.
+* Prepare for next iteration.
+* Push everything on remote repository.
 
 ## Usage
 
@@ -319,7 +345,7 @@ bar="bar"
 ### How to render a configuration and keep template after rendering.
 
 * By default, temply will remove template file.
-* If you want to keep template you will have to use the flag `--keep-template`
+* If you want to keep template you will have to use the flag `--keep-template`.
 
 ## Contributing
 If you find this project useful here's how you can help :

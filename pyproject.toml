@@ -22,7 +22,7 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-cloud-reaper = "temply.temply:main"
+temply = "temply.temply:main"
 
 [tool.poetry.urls]
 "Changelog" = "https://github.com/amannocci/temply/CHANGELOG.md"

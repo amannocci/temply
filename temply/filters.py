@@ -1,7 +1,7 @@
 import json
 
 import yaml
-from jinja2 import pass_eval_context, pass_context
+from jinja2 import pass_context, pass_eval_context
 
 
 @pass_eval_context

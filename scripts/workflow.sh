@@ -27,6 +27,8 @@ function command::check() {
     build)
       command::is_present "gcc"
       ;;
+    test)
+      ;;
     *)
       echo "Unknown argument: ${arg}"
       ;;

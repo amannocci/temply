@@ -2,11 +2,11 @@ from pathlib import Path
 
 import click
 import jinja2
-from jinja2 import Environment, FileSystemLoader, DictLoader
+from jinja2 import DictLoader, Environment, FileSystemLoader
 
 from . import __version__
-from .filters import from_json, to_json, from_yaml, to_yaml, get_environment
-from .loaders import EnvLoader, EnvdirLoader, DotenvLoader, JsonFileLoader
+from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
+from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 
 
 @click.command("temply")

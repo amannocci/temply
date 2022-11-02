@@ -34,21 +34,7 @@ function command::check() {
 }
 
 function command::setup() {
-  # Constants
-  HOOK_DIR=${BASE_PROJECT}/.git/hooks
-
-  # Create directory
-  mkdir -p "${HOOK_DIR}"
-
-  # Remove all old hooks before anything
-  rm -f "${HOOK_DIR}/commit-msg"
-  rm -f "${HOOK_DIR}/pre-commit"
-  log::success "remove old hooks"
-
-  # Copy new ones
-  cp "${RELATIVE_DIR}/hook-commit-msg.sh" "${HOOK_DIR}/commit-msg"
-  cp "${RELATIVE_DIR}/hook-pre-commit.sh" "${HOOK_DIR}/pre-commit"
-  log::success "copy new hooks"
+  process::try "clean previous build" pre-commit install
 }
 
 function command::generate() {

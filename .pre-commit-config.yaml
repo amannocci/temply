@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [ python ]
+        args:
+          - -rn # Only display messages
+          - -sn # Don't display the score
+        files: 'temply'
+        exclude: 'bin/temply'
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        language_version: python3.9
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: mixed-line-ending
+        name: enforce-lf-newline
+        args:
+          - --fix=lf

@@ -58,8 +58,12 @@ cmd = "poetryup --latest"
 [tool.poe.tasks._cleanup]
 shell = """
 import shutil
-shutil.rmtree('./build')
-shutil.rmtree('./dist')
+
+for path in ["build", "dist"]:
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError as err:
+        print(f"Skipping {path} deletion...")
 """
 interpreter = "python"
 

@@ -21,11 +21,11 @@ from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file):
     """Render jinja2 templates on the command line with environment variables."""
 
-    # Define undefine behaviour
+    # Define undefined behaviour
     if allow_missing:
-        undefine_behaviour = jinja2.Undefined
+        undefined_behaviour = jinja2.Undefined
     else:
-        undefine_behaviour = jinja2.StrictUndefined
+        undefined_behaviour = jinja2.StrictUndefined
 
     # Decide if we use stdin or regular file
     if input_file:
@@ -48,7 +48,7 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
 
     # Setup environment
     env = Environment(
-        loader=loader, undefined=undefine_behaviour, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True
+        loader=loader, undefined=undefined_behaviour, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True
     )
 
     # Setup env

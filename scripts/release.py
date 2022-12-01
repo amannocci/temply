@@ -8,7 +8,11 @@ from sh import git
 
 def __set_version(version: str) -> None:
     # Update app version
-    (Path("temply") / "__init__.py").write_text(f"""__version__ = \"{version}\"""")
+    try:
+        (Path("temply") / "__init__.py").write_text(f"""__version__ = \"{version}\"\n""")
+    except Exception as err:
+        print("The `temply/__init__.py` file can't be written", file=sys.stderr)
+        raise err
 
     # Update project version
     try:
@@ -17,7 +21,7 @@ def __set_version(version: str) -> None:
         print("The `pyproject.toml` can't be read", file=sys.stderr)
         raise err
 
-    data = re.sub('version = "(.+)"', f'version = "{version}"', data)
+    data = re.sub(r"version = \"(.+)\"", f'version = "{version}"', data, count=1)
     try:
         Path("pyproject.toml").write_text(data)
     except Exception as err:
@@ -42,12 +46,12 @@ def run() -> None:
 
     # Push changes
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git("commit", "-s", "-m", f"[Released] temply {release_version}", _out=sys.stdout, _err=sys.stderr)
+    git("commit", "-s", "-m", f"[Released] temply {release_version}", "--no-verify", _out=sys.stdout, _err=sys.stderr)
     git("tag", release_version, _out=sys.stdout, _err=sys.stderr)
 
     # Update all files
     __set_version(next_version)
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git("commit", "-s", "-m", "[Updated] Prepare for next iteration", _out=sys.stdout, _err=sys.stderr)
-    # git("push", _out=sys.stdout, _err=sys.stderr)
-    # git("push", "--tags", _out=sys.stdout, _err=sys.stderr)
+    git("commit", "-s", "-m", "[Updated] Prepare for next iteration", "--no-verify", _out=sys.stdout, _err=sys.stderr)
+    git("push", _out=sys.stdout, _err=sys.stderr)
+    git("push", "--tags", _out=sys.stdout, _err=sys.stderr)

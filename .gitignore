@@ -6,3 +6,4 @@ build
 dist
 .idea
 .tox
+.pytest_cache

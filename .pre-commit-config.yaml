@@ -12,7 +12,7 @@ repos:
         files: 'temply'
         exclude: 'bin/temply'
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.10.0
     hooks:
       - id: black
         language_version: python3.9
@@ -22,7 +22,7 @@ repos:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v4.3.0
     hooks:
       - id: mixed-line-ending
         name: enforce-lf-newline

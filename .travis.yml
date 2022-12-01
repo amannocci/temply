@@ -7,8 +7,8 @@ before_install:
 - pip install poetry
 script:
 - "unset MY_RUBY_HOME"
-- "./scripts/workflow_linux_amd64 test"
-- "./scripts/workflow_linux_amd64 build"
+- "poetry run poe test"
+- "poetry run poe build"
 - "./dist/temply --version"
 deploy:
   provider: releases

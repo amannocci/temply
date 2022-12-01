@@ -8,10 +8,9 @@
 * [Contact](mailto:adrien.mannocci@gmail.com)
 
 ## Prerequisites
-* [Python 3.8](https://docs.python.org/3/) for development.
-* [Pip](https://pypi.org/project/pip/) for development.
-* [Poetry](https://python-poetry.org/) for development.
-* [Mage](https://magefile.org/) for workflow.
+* [Python 3.9+](https://docs.python.org/3/).
+* [Pip 19+](https://pypi.org/project/pip/).
+* [Poetry](https://python-poetry.org/).
 * [pre-commit](https://pre-commit.com/) for git management.
 
 ## Features
@@ -19,21 +18,21 @@
 * Standalone executable with jinja2 templating engine.
 * Support inclusion template rendering.
 * Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
-* Support loading from environment va
+* Support loading from environment variables.
 
 ## Workflow
 
 ### Setup
 The following steps will ensure your project is cloned properly.
 1. `git clone https://github.com/amannocci/temply`
-2. `cd temply && mage -d scripts -w . env:configure`
+2. `cd temply && poetry run poe env-configure`
 
 ### Develop
 * To build `temply` in dev mode you will need to install prerequisites packages.
 * Run the command below to install `temply` in dev mode into your local environment.
 
 ```bash
-mage -d scripts -w . env:configure
+poetry run poe env-configure
 ```
 
 * You can now develop awesome `temply` features interactively by running `temply` command.
@@ -42,14 +41,14 @@ mage -d scripts -w . env:configure
 * To lint you have to use the workflow.
 
 ```bash
-mage -d scripts -w . lint
+poetry run poe lint
 ```
 
 ### Format
 * To format you have to use the workflow.
 
 ```bash
-mage -d scripts -w . fmt
+poetry run poe fmt
 ```
 
 * It will format the project code using `black`.
@@ -58,7 +57,7 @@ mage -d scripts -w . fmt
 * To build you have to use the workflow.
 
 ```bash
-mage -d scripts -w . build
+poetry run poe build
 ```
 
 * It will compile project code with the current environment.
@@ -68,14 +67,14 @@ mage -d scripts -w . build
 * Tests are based on `pytest`.
 
 ```bash
-mage -d scripts -w . test
+poetry run poe test
 ```
 
 ### Release
 * To release a new version of the project, you have to use the workflow.
 
 ```bash
-mage -d scripts -w . release <release_version> <next_version>
+RELEASE_VERSION=<release_version> NEXT_VERSION=<next_version> poetry run poe release
 ```
 
 * It will update version in every needed files.
@@ -351,4 +350,4 @@ bar="bar"
 If you find this project useful here's how you can help :
 
 * Send a Pull Request with your awesome new features and bug fixed
-* Be a part of the ommunity and help resolve [Issues](https://github.com/amannocci/temply/issues)
+* Be a part of the community and help resolve [Issues](https://github.com/amannocci/temply/issues)

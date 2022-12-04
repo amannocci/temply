@@ -1,21 +1,21 @@
 language: python
 dist: bionic
 python:
-- '3.9.15'
+- 3.9.15
 before_install:
 - sudo apt-get -y install upx
 - pip install poetry pre-commit
 script:
-- "unset MY_RUBY_HOME"
-- "poetry install"
-- "poetry run poe env-configure"
-- "poetry run poe test"
-- "poetry run poe build"
+- unset MY_RUBY_HOME
+- poetry install
+- poetry run poe env-configure
+- poetry run poe test
+- poetry run poe build
 - "./dist/temply --version"
 deploy:
   provider: releases
   api_key:
-    secure: ge4o8JMNiI4gOeiQDZk4cH8Y/yRCmpmP3H/ELbA3pfC2wrJYzoZUiFQx4ZY6MaLQHNcFHpobHZ8yyvpNgDQfrZAoyBOgqUL6yj25HONi3HE+ywHHlv4wODVt6ZLujd4rBgWuJXgaZpkgC/ZOItBgamf/RtrOIGDTofLknCmOSlkraCKGCDj4Ct/7p20mflNo1owvhjxDstum2p5sIAe+PCIXieCyeRvON42r0Eu7RX6nlF2x8J9ILs46h+3nmo84LgMNWE/pBnEOGS4NA0KWTv7VqhvFFd3E8ATMdhS0PA99JQo4BFP44mpJpWCxZLcbOSC5gQXCQv9Nv0Hn0v3VEVMVORSTNHQKGQakfrNboDtV88g5KGnvf6vVnsZDB2DEU5acjgu9e91i8LkEfgCN/nxe5BPaOqJgrsXOWCSdQcCY4SC1Oyt1eHXN2Dartcd/rJ4n/8t9e3jqvfW1Svcml3r9+rfOV68mnREvYVAbFHl0dCdyux20OL2h6DER5o+iSsuWbay6XZrgAkhIl3SIsldgnxsD/SItPzOuDr2AEWjXUPorvLS0WjNTxAaZ8eU3M39fDM7LVSvqDM6cex4y9lxlUtWAcafrMArfGLXHtAgIw3FhkEbrI4Bj3zdsMasJcR1Y0gUS0yInnmS+IC0Z1jochzbrTi3446bSwD1UVvY=
+    secure: thjjFNgTezYUWES4TTrIlNZ/8y284p/PgTBaf/0HChQa9p+TK1YGERKvNW88ItfMXfgiMQUx4jdehG7oDAlvopMRqfT69obrn3ux2cBTQH4d6eXr4r0LAfXJrZab6MbVVWnohiCQwQvCVTAvZybjQ3cilmdDA8YekFppZMFC/+lkzLD/jxx2zAHPzCm/TrpLItC3R5TnQq1GsyqLUelSw539b9l5n1JNrXAl1yk7OWWReXA7bJwm+tT4Ymn8zHaCmK81SouY6LR3b8ptXYCLzVRD2lby6hzEAd1KgZfPI7dr35xWYA5aDwEstu5cH0AkQBlgV1MGFqmUeZJRZOWpRK2HJxOAsZkBC5j99V2SNTM4bDUhe3Xesw9LPbGOFwfrTTD+B3+NINASnaMv3wdrO4B7hOUri30khxsufLhK6QnVoDSqxol6cgIL9xw3IbZuhM3sBSxUC+wXrOq8sAFo2kyClgsK8UsPW6rh7pdnntuRSWnz1NxFQB7jmZHoGU4cZL+XxIlCy3Ft3l/4t1RBDRhOl6ZPq3UJlfy/nzzVPkcPDJaQcJTU3XKohzMOBs8407M68DlGnK8lA1cjleT4SK15Mx9LfXiLWmu/Kg+rJD8Qy1bf1CKVYzPirUoWRleM0Iiqv37rm4Cjr6qp/2x3Z0EnxavQf8jJjKRUi7lbg1E=
   file: dist/temply
   on:
     repo: amannocci/temply

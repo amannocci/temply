@@ -1,0 +1,39 @@
+---
+
+name: main
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install --no-interaction
+
+      - name: Lint
+        run: poetry run poe lint
+
+      - name: Format
+        run: poetry run poe build
+
+      - name: Test
+        run: poetry run poe test

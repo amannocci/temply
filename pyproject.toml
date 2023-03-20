@@ -47,10 +47,7 @@ sh = "1.14.3" # MIT
 build = ["pyinstaller"]
 
 [tool.poe.tasks."env:configure"]
-sequence = [
-    { cmd = "poetry install -E build" },
-    { cmd = "pre-commit install" }
-]
+script = "scripts.env:configure"
 
 [tool.poe.tasks."project:upgrade"]
 cmd = "poetry up --latest"

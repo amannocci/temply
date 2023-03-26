@@ -9,6 +9,7 @@ from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
 from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 
 
+# pylint: disable=R0913,R0914
 @click.command("temply")
 @click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
 @click.option("--keep-template", help="Keep original template file.", is_flag=True)
@@ -18,7 +19,7 @@ from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 @click.option("-o", "--output-file", help="Output file path.", type=click.Path())
 @click.version_option(f"{__version__}")
 @click.argument("input_file", required=False)
-def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file):
+def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file) -> None:
     """Render jinja2 templates on the command line with environment variables."""
 
     # Define undefined behaviour
@@ -72,8 +73,9 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
     envs = JsonFileLoader(json_file).load(envs) if json_file else envs
     try:
         rendering = template.render(**envs)
-    except jinja2.UndefinedError as e:
-        raise Exception(e)
+    except jinja2.UndefinedError as err:
+        # pylint: disable=W0719
+        raise Exception(err) from err
 
     # Remove template
     if input_file and not keep_template:
@@ -81,6 +83,6 @@ def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, i
 
     # Stdout or file
     if output_file:
-        Path(output_file).write_text(rendering)
+        Path(output_file).write_text(rendering, encoding="utf-8")
     else:
         click.echo(rendering)

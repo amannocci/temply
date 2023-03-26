@@ -24,24 +24,25 @@ class EnvLoader(Loader):
     """Environment loader implementation"""
 
     def load(self, ref: Optional[Dict] = None) -> Dict:
-        ctx = ref if ref else dict()
-        for k, v in os.environ.items():
-            ctx[k] = v
+        ctx = ref if ref else {}
+        for key, value in os.environ.items():
+            ctx[key] = value
         return ctx
 
 
 class EnvdirLoader(Loader):
     """Environment directory loader implementation"""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
+        """Init envdir loader."""
         self.__path = path
 
     def load(self, ref: Optional[Dict] = None) -> Dict:
-        ctx = ref if ref else dict()
-        for root, dirs, files in os.walk(self.__path, followlinks=False):
+        ctx = ref if ref else {}
+        for root, _, files in os.walk(self.__path, followlinks=False):
             for file in files:
-                with open(os.path.join(root, file), "r") as f:
-                    value = f.read().strip("\n\t ").replace("\x00", "\n")
+                with open(os.path.join(root, file), "r", encoding="utf-8") as file_descriptor:
+                    value = file_descriptor.read().strip("\n\t ").replace("\x00", "\n")
                     if len(value) > 0:
                         ctx[file] = value
                     else:
@@ -52,11 +53,12 @@ class EnvdirLoader(Loader):
 class DotenvLoader(Loader):
     """Environment file loader implementation"""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
+        """Init dotenv loader."""
         self.__path = path
 
     def load(self, ref: Optional[Dict] = None) -> Dict:
-        ctx = ref if ref else dict()
+        ctx = ref if ref else {}
 
         # Check dotfile is a regular file
         dotfile_path = Path(self.__path)
@@ -65,13 +67,13 @@ class DotenvLoader(Loader):
 
         # Process
         try:
-            value = dotfile_path.read_text()
+            value = dotfile_path.read_text(encoding="utf-8")
             lines = value.splitlines()
             for line in lines:
                 key, value = line.split("=", 1)
                 ctx[key] = value
         except OSError as err:
-            raise click.FileError(str(dotfile_path.absolute()), err.__str__())
+            raise click.FileError(str(dotfile_path.absolute()), str(err))
 
         return ctx
 
@@ -79,11 +81,12 @@ class DotenvLoader(Loader):
 class JsonFileLoader(Loader):
     """Environment json file loader implementation"""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
+        """Init json file loader."""
         self.__path = path
 
     def load(self, ref: Optional[Dict] = None) -> Dict:
-        ctx = ref if ref else dict()
+        ctx = ref if ref else {}
 
         # Check json file is a regular file
         json_file_path = Path(self.__path)
@@ -92,11 +95,11 @@ class JsonFileLoader(Loader):
 
         # Process
         try:
-            values = json.loads(json_file_path.read_text())
+            values = json.loads(json_file_path.read_text(encoding="utf-8"))
             for val in values:
                 if val.get("key"):
                     ctx[val.get("key")] = val.get("value")
         except OSError as err:
-            raise click.FileError(str(json_file_path.absolute()), err.__str__())
+            raise click.FileError(str(json_file_path.absolute()), str(err))
 
         return ctx

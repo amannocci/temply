@@ -5,6 +5,8 @@ from pathlib import Path
 
 from sh import git
 
+from scripts.utils import Constants
+
 
 def __set_version(version: str) -> None:
     # Update app version
@@ -16,7 +18,7 @@ def __set_version(version: str) -> None:
 
     # Update project version
     try:
-        data = Path("pyproject.toml").read_text()
+        data = Constants.PROJECT_PATH.read_text()
     except Exception as err:
         print("The `pyproject.toml` can't be read", file=sys.stderr)
         raise err

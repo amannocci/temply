@@ -5,7 +5,7 @@ from time import time
 
 from sh import git, podman
 
-from scripts.utils import Constants, read_project_conf
+from scripts.utils import Constants, container_backend, read_project_conf
 
 
 def run() -> None:
@@ -22,9 +22,10 @@ def run() -> None:
     local_dist_path.mkdir(parents=True, exist_ok=False)
     local_dist_path = local_dist_path.absolute().as_posix()
 
+    cmd = container_backend()
     for platform_arch in ["linux/amd64", "linux/arm64"]:
         platform_arch_slug = platform_arch.replace("/", "-")
-        podman(
+        cmd(
             "buildx",
             "build",
             "--platform",

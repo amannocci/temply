@@ -17,7 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install python
+        uses: actions/setup-python@v4
         with:
           python-version-file: '.python-version'
 
@@ -29,7 +35,7 @@ jobs:
       - name: Lint
         run: poetry run poe lint
 
-      - name: Format
+      - name: Build
         run: poetry run poe build
 
       - name: Test

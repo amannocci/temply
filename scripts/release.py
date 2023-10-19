@@ -46,12 +46,20 @@ def run() -> None:
 
     # Push changes
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git("commit", "-s", "-m", f"[Released] temply {release_version}", "--no-verify", _out=sys.stdout, _err=sys.stderr)
+    git(
+        "commit",
+        "-s",
+        "-m",
+        f"release: temply {release_version}",
+        "--no-verify",
+        _out=sys.stdout,
+        _err=sys.stderr,
+    )
     git("tag", release_version, _out=sys.stdout, _err=sys.stderr)
 
     # Update all files
     __set_version(next_version)
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git("commit", "-s", "-m", "[Updated] Prepare for next iteration", "--no-verify", _out=sys.stdout, _err=sys.stderr)
+    git("commit", "-s", "-m", "chore: prepare for next iteration", "--no-verify", _out=sys.stdout, _err=sys.stderr)
     git("push", _out=sys.stdout, _err=sys.stderr)
     git("push", "--tags", _out=sys.stdout, _err=sys.stderr)

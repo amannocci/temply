@@ -4,7 +4,7 @@ from sh import CommandNotFound, poetry
 
 
 def configure() -> None:
-    poetry("install", "-E", "build", _out=sys.stdout, _err=sys.stderr)
+    poetry("install", _out=sys.stdout, _err=sys.stderr)
     try:
         from sh import pre_commit
 

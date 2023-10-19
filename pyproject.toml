@@ -44,12 +44,17 @@ pytest = "^7.3.2" # MIT
 sh = "1.14.3" # MIT
 
 [tool.poe.tasks."env:configure"]
+help = "Setup environment."
 script = "scripts.env:configure"
 
 [tool.poe.tasks."project:upgrade"]
+deps = [
+    "env:configure"
+]
+help = "Upgrade project dependencies."
 cmd = "poetry up --latest"
 
-[tool.poe.tasks._cleanup]
+[tool.poe.tasks.wipe]
 shell = """
 import shutil
 
@@ -62,41 +67,50 @@ for path in ["build", "dist"]:
 interpreter = "python"
 
 [tool.poe.tasks.generate]
-sequence = [
-    { ref = "env:configure" },
-    { cmd = "poetry run pyinstaller -n temply --onefile --noconfirm ./bin/temply" }
+deps = [
+    "env:configure"
 ]
+help = "Generate configuration files."
+cmd = "pyinstaller -n temply --onefile --noconfirm ./bin/temply"
 
 [tool.poe.tasks.lint]
-sequence = [
-    { ref = "env:configure" },
-    { cmd = "poetry run pylint temply" }
+deps = [
+    "env:configure"
 ]
+help = "Lint code project."
+cmd = "pylint temply"
 
 [tool.poe.tasks.fmt]
+deps = [
+    "env:configure"
+]
+help = "Format code project."
 sequence = [
-    { ref = "env:configure" },
-    { cmd = "poetry run isort temply tests scripts" },
-    { cmd = "poetry run black temply tests scripts" }
+    { cmd = "isort temply tests scripts" },
+    { cmd = "black temply tests scripts" }
 ]
 
 [tool.poe.tasks.build]
-sequence = [
-    { ref = "_cleanup" },
-    { cmd = "poetry run pyinstaller temply.spec" }
+deps = [
+    "wipe",
+    "env:configure"
 ]
+help = "Build standalone binary."
+cmd = "pyinstaller temply.spec"
 
 [tool.poe.tasks.test]
-sequence = [
-    { ref = "env:configure" },
-    { cmd = "poetry run pytest" }
+deps = [
+    "env:configure"
 ]
+help = "Run all tests."
+cmd = "pytest tests"
 
 [tool.poe.tasks.release]
-sequence = [
-    { ref = "env:configure" },
-    { script = "scripts.release:run" }
+deps = [
+    "env:configure"
 ]
+help = "Create a new temply release."
+script = "scripts.release:run"
 
 [build-system]
 requires = ["poetry-core"]

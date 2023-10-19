@@ -1,19 +1,22 @@
 # temply
+
 [![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=main)](https://travis-ci.com/github/amannocci/temply)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 *Render jinja2 templates on the command line without python runtime.*
+
 * [Source](https://github.com/amannocci/temply)
 * [Issues](https://github.com/amannocci/temply/issues)
 * [Contact](mailto:adrien.mannocci@gmail.com)
 
 ## Prerequisites
-* [Python 3.9+](https://docs.python.org/3/).
-* [Pip 19+](https://pypi.org/project/pip/).
+
+* [Python 3.11+](https://docs.python.org/3/).
 * [Poetry](https://python-poetry.org/).
 * [pre-commit](https://pre-commit.com/) for git management.
 
 ## Features
+
 * Render jinja2 template using command line without python environment.
 * Standalone executable with jinja2 templating engine.
 * Support inclusion template rendering.
@@ -23,58 +26,68 @@
 ## Workflow
 
 ### Setup
+
 The following steps will ensure your project is cloned properly.
+
 1. `git clone https://github.com/amannocci/temply`
-2. `cd temply && poetry run poe env-configure`
+2. `poetry install`
+3. `poetry shell`
+4. `poetry poe env:configure`
 
 ### Develop
+
 * To build `temply` in dev mode you will need to install prerequisites packages.
 * Run the command below to install `temply` in dev mode into your local environment.
 
 ```bash
-poetry run poe env-configure
+poetry poe env:configure
 ```
 
 * You can now develop awesome `temply` features interactively by running `temply` command.
 
 ### Lint
+
 * To lint you have to use the workflow.
 
 ```bash
-poetry run poe lint
+poetry poe lint
 ```
 
 ### Format
+
 * To format you have to use the workflow.
 
 ```bash
-poetry run poe fmt
+poetry poe fmt
 ```
 
 * It will format the project code using `black`.
 
 ### Build
+
 * To build you have to use the workflow.
 
 ```bash
-poetry run poe build
+poetry poe build
 ```
 
 * It will compile project code with the current environment.
 
 ### Test
+
 * To test `temply` you have to use the workflow.
 * Tests are based on `pytest`.
 
 ```bash
-poetry run poe test
+poetry poe test
 ```
 
 ### Release
+
 * To release a new version of the project, you have to use the workflow.
 
 ```bash
-RELEASE_VERSION=<release_version> NEXT_VERSION=<next_version> poetry run poe release
+RELEASE_VERSION=<release_version> NEXT_VERSION=<next_version> poetry poe release
 ```
 
 * It will update version in every needed files.
@@ -94,9 +107,9 @@ RELEASE_VERSION=<release_version> NEXT_VERSION=<next_version> poetry run poe rel
 * To be compatible with a wide range of linux, we build the project using an old `glibc` version.
 * If the project don't run, you will have to re-build it using your distribution.
 * When the project start, it will look at the template, found the directory of the template and then configure jinja2  
-the filesystem.
+  the filesystem.
 * It will then attempt to render the template and create a file or display on stdout.
-* You can use any [jinja2](https://jinja.palletsprojects.com/en/2.11.x/templates/) syntax.
+* You can use any [jinja2](https://jinja.palletsprojects.com/en/3.0.x/templates/) syntax.
 
 ### How to render a simple configuration
 
@@ -222,7 +235,9 @@ json_var='["string"]' temply /path/to/template.json.tpl
 * It will output on stdout the following content.
 
 ```json
-["string"]
+[
+  "string"
+]
 ```
 
 ### How to render a configuration with a yaml environment variable.
@@ -321,10 +336,17 @@ bar="{{ BAR }}"
 ```
 
 * Then create a json file named `file.json` with the following content.
+
 ```json
 [
-  {"key": "FOO", "value": "foo"},
-  {"key": "BAR", "value": "bar"}
+  {
+    "key": "FOO",
+    "value": "foo"
+  },
+  {
+    "key": "BAR",
+    "value": "bar"
+  }
 ]
 ```  
 
@@ -347,6 +369,7 @@ bar="bar"
 * If you want to keep template you will have to use the flag `--keep-template`.
 
 ## Contributing
+
 If you find this project useful here's how you can help :
 
 * Send a Pull Request with your awesome new features and bug fixed

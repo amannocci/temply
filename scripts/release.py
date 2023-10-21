@@ -5,7 +5,6 @@ from pathlib import Path
 
 from sh import gh, git, poetry
 
-from scripts import build
 from scripts.utils import Constants
 
 
@@ -48,7 +47,7 @@ def run() -> None:
     __set_version(release_version)
 
     # Build binaries
-    poetry("poe", "build")
+    poetry("poe", "build", _out=sys.stdout, _err=sys.stderr)
 
     # Push changes
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
@@ -71,4 +70,7 @@ def run() -> None:
     git("push", "--tags", _out=sys.stdout, _err=sys.stderr)
 
     # Create release note
-    gh("release", "create", release_version, "--generate-notes", "./dist/*")
+    args = ["release", "create", "--generate-notes", "--latest", f"--title=temply {release_version}", release_version]
+    binaries = [file.absolute().as_posix() for file in Path(".").glob("./dist/*")]
+    args.extend(binaries)
+    gh(args, _out=sys.stdout, _err=sys.stderr)

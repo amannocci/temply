@@ -3,7 +3,7 @@ import re
 import sys
 from pathlib import Path
 
-from sh import git
+from sh import gh, git
 
 from scripts.utils import Constants
 
@@ -65,3 +65,6 @@ def run() -> None:
     git("commit", "-s", "-m", "chore: prepare for next iteration", "--no-verify", _out=sys.stdout, _err=sys.stderr)
     git("push", _out=sys.stdout, _err=sys.stderr)
     git("push", "--tags", _out=sys.stdout, _err=sys.stderr)
+
+    # Create release note
+    gh("release", "create", release_version, "--generate-notes", "./dist/*")

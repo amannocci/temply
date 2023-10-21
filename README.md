@@ -11,8 +11,8 @@
 
 ## Prerequisites
 
-* [Python 3.11+](https://docs.python.org/3/).
-* [Poetry](https://python-poetry.org/).
+* [Python 3.11+](https://docs.python.org/3/) for build system.
+* [Poetry](https://python-poetry.org/) for build system.
 * [pre-commit](https://pre-commit.com/) for git management.
 
 ## Features

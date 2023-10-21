@@ -10,7 +10,7 @@ repos:
           - -rn # Only display messages
           - -sn # Don't display the score
         files: 'temply'
-        exclude: 'bin/temply'
+        exclude: 'bin/temply|tests'
   - repo: https://github.com/psf/black
     rev: 23.10.0
     hooks:

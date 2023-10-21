@@ -3,8 +3,9 @@ import re
 import sys
 from pathlib import Path
 
-from sh import gh, git
+from sh import gh, git, poetry
 
+from scripts import build
 from scripts.utils import Constants
 
 
@@ -45,6 +46,9 @@ def run() -> None:
 
     # Update all files
     __set_version(release_version)
+
+    # Build binaries
+    poetry("poe", "build")
 
     # Push changes
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)

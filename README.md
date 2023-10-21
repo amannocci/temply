@@ -1,6 +1,6 @@
 # temply
 
-[![TravisCI](https://travis-ci.com/amannocci/temply.svg?branch=main)](https://travis-ci.com/github/amannocci/temply)
+[![Github Actions](https://github.com/amannocci/temply/actions/workflows/ci.yml/badge.svg)](https://github.com/amannocci/temply/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 *Render jinja2 templates on the command line without python runtime.*

@@ -8,3 +8,4 @@ dist
 .tox
 .pytest_cache
 .DS_Store
+pyrightconfig.json

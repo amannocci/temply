@@ -3,9 +3,9 @@ import sys
 from pathlib import Path
 from time import time
 
-from sh import git, podman
+from sh import git, pyinstaller
 
-from scripts.utils import Constants, container_backend, read_project_conf
+from scripts.utils import Constants, container_backend, fatal, read_project_conf
 
 
 def run() -> None:
@@ -20,29 +20,61 @@ def run() -> None:
     # Create dist dir
     local_dist_path = Path("dist")
     local_dist_path.mkdir(parents=True, exist_ok=False)
-    local_dist_path = local_dist_path.absolute().as_posix()
+    local_dist_path = local_dist_path.absolute()
 
-    cmd = container_backend()
-    for platform_arch in ["linux/amd64", "linux/arm64"]:
-        platform_arch_slug = platform_arch.replace("/", "-")
-        cmd(
-            "buildx",
-            "build",
-            "--platform",
-            platform_arch,
-            "-v",
-            f"{local_dist_path}:/opt/temply/dist",
-            "--build-arg",
-            f"base_image_version={python_version}",
-            "--build-arg",
-            f"platform_arch={platform_arch_slug}",
-            "--build-arg",
-            f"app_version={version}",
-            "-t",
-            f"{Constants.REGISTRY_URL}/temply:{image_id}",
-            "-f",
-            "Containerfile",
-            ".",
-            _out=sys.stdout,
-            _err=sys.stderr,
-        )
+    system = platform.system().lower()
+    if system == "darwin":
+        pyinstaller("temply.spec", _out=sys.stdout, _err=sys.stderr)
+        arch = platform.machine()
+        arch = "amd64" if arch == "x86_64" else arch
+        Path("./dist/temply").replace(Path(f"./dist/temply-{version}-{system}-{arch}"))
+    elif system == "linux":
+        # Use cross-build to build both amd64 and arm64 versions.
+        cmd, env = container_backend()
+        for arch in ["amd64", "arm64"]:
+            platform_arch = f"linux/{arch}"
+            cmd(
+                "buildx",
+                "build",
+                "--load",
+                "--platform",
+                platform_arch,
+                "--build-arg",
+                f"base_image_version={python_version}",
+                "-t",
+                f"{Constants.REGISTRY_URL}/temply:{image_id}",
+                "-f",
+                "Containerfile",
+                ".",
+                _out=sys.stdout,
+                _err=sys.stderr,
+                _env=env,
+            )
+            container_id = cmd(
+                "run",
+                "-d",
+                "--platform",
+                platform_arch,
+                "--entrypoint=cat",
+                f"{Constants.REGISTRY_URL}/temply:{image_id}",
+                _err=sys.stderr,
+                _env=env,
+            ).strip()
+            cmd(
+                "cp",
+                f"{container_id}:/opt/temply/dist/temply",
+                (local_dist_path / f"temply-{version}-linux-{arch}").as_posix(),
+                _out=sys.stdout,
+                _err=sys.stderr,
+                _env=env,
+            )
+            cmd(
+                "rm",
+                "-f",
+                container_id,
+                _out=sys.stdout,
+                _err=sys.stderr,
+                _env=env,
+            )
+    else:
+        fatal(f"Unsupported system: {system}")

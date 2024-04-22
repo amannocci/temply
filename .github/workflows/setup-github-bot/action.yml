@@ -1,0 +1,12 @@
+---
+name: Setup github actions bot
+description: Setup github actions bot to commit and create PRs
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions@github.com"
+      shell: bash

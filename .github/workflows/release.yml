@@ -72,10 +72,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup git
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+      - name: Setup github actions bot
+        uses: ./.github/workflows/setup-github-bot
 
       - name: Install environment
         uses: ./.github/workflows/env-install

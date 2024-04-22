@@ -14,9 +14,10 @@ class Constants:
 
     # pylint: disable=R0903
     ENCODING_UTF_8: Final[str] = "utf-8"
-    PROJECT_PATH: Final[Path] = Path("pyproject.toml")
+    PYPROJECT_PATH: Final[Path] = Path("pyproject.toml")
     PYRIGHTCONFIG_PATH: Final[Path] = Path("pyrightconfig.json")
     REGISTRY_URL: str = os.getenv("REGISTRY_URL", "local.dev")
+    TEMPLY_INIT_PATH: Final[Path] = Path("./temply/__init__.py")
 
 
 def fatal(msg: str, err: Exception | None = None) -> NoReturn:
@@ -27,7 +28,7 @@ def fatal(msg: str, err: Exception | None = None) -> NoReturn:
     sys.exit(1)
 
 
-def read_project_conf() -> Dict[str, Any]:
+def read_project_conf() -> dict[str, Any]:
     """
     Read project configuration and returns a dict configuration.
     Returns:
@@ -38,8 +39,7 @@ def read_project_conf() -> Dict[str, Any]:
     try:
         return dotty(toml.load(Path("pyproject.toml").absolute().as_posix()))
     except TomlDecodeError as err:
-        print("The `pyproject.toml` file isn't valid", file=sys.stderr)
-        raise err
+        fatal("The `pyproject.toml` file isn't valid", err)
 
 
 def detect_poetry() -> Command:
@@ -52,6 +52,20 @@ def detect_poetry() -> Command:
         return Command("poetry")
     except CommandNotFound:
         fatal("`poetry` isn't detected")
+
+
+def detect_gh() -> Command:
+    try:
+        return Command("gh")
+    except CommandNotFound:
+        fatal("`gh` isn't installed")
+
+
+def detect_git() -> Command:
+    try:
+        return Command("git")
+    except CommandNotFound:
+        fatal("`git` isn't installed")
 
 
 def container_backend() -> tuple[Command, dict[str, str]]:

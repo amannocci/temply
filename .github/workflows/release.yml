@@ -1,0 +1,57 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The next iteration version. This workflow will automatically perform the required version bumps"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/workflows/env-install
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: poetry run poe release
+
+  post-release:
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          gh auth setup-git
+
+      - name: Install environment
+        uses: ./.github/workflows/env-install
+
+      - name: Run post-release step
+        run: poetry run poe release:post
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_VERSION: ${{ inputs.version }}

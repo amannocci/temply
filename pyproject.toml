@@ -99,10 +99,20 @@ deps = ["env:configure"]
 help = "Run all tests."
 cmd = "pytest tests"
 
-[tool.poe.tasks.release]
+[tool.poe.tasks."release:pre"]
+deps = ["env:configure"]
+help = "Create a PR with changes for release."
+script = "scripts.release:pre"
+
+[tool.poe.tasks."release"]
 deps = ["env:configure"]
 help = "Create a new temply release."
 script = "scripts.release:run"
+
+[tool.poe.tasks."release:post"]
+deps = ["env:configure"]
+help = "Prepare next iteration."
+script = "scripts.release:post"
 
 [build-system]
 requires = ["poetry-core"]

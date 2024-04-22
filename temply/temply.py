@@ -21,7 +21,6 @@ from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 @click.argument("input_file", required=False)
 def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file) -> None:
     """Render jinja2 templates on the command line with environment variables."""
-
     # Define undefined behaviour
     if allow_missing:
         undefined_behaviour = jinja2.Undefined

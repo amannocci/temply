@@ -2,7 +2,6 @@ import json
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Optional
 
 import click
 
@@ -12,7 +11,7 @@ class Loader(ABC):
     """Abstract loader"""
 
     @abstractmethod
-    def load(self, ref: Optional[Dict] = None) -> Dict:
+    def load(self, ref: dict | None = None) -> dict:
         """
         Load environments variables into ref dict.
         :param ref: ref dict context.
@@ -23,7 +22,7 @@ class Loader(ABC):
 class EnvLoader(Loader):
     """Environment loader implementation"""
 
-    def load(self, ref: Optional[Dict] = None) -> Dict:
+    def load(self, ref: dict | None = None) -> dict:
         ctx = ref if ref else {}
         for key, value in os.environ.items():
             ctx[key] = value
@@ -37,7 +36,7 @@ class EnvdirLoader(Loader):
         """Init envdir loader."""
         self.__path = path
 
-    def load(self, ref: Optional[Dict] = None) -> Dict:
+    def load(self, ref: dict | None = None) -> dict:
         ctx = ref if ref else {}
         for root, _, files in os.walk(self.__path, followlinks=False):
             for file in files:
@@ -57,7 +56,7 @@ class DotenvLoader(Loader):
         """Init dotenv loader."""
         self.__path = path
 
-    def load(self, ref: Optional[Dict] = None) -> Dict:
+    def load(self, ref: dict | None = None) -> dict:
         ctx = ref if ref else {}
 
         # Check dotfile is a regular file
@@ -85,7 +84,7 @@ class JsonFileLoader(Loader):
         """Init json file loader."""
         self.__path = path
 
-    def load(self, ref: Optional[Dict] = None) -> Dict:
+    def load(self, ref: dict | None = None) -> dict:
         ctx = ref if ref else {}
 
         # Check json file is a regular file

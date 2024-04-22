@@ -15,12 +15,43 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - macos-14
+          - macos-13
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install environment
+        uses: ./.github/workflows/env-install
+
+      - name: Build
+        run: poetry run poe build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: temply-${{ matrix.os }}
+          path: "dist/*"
+
   release:
     runs-on: ubuntu-latest
+    needs:
+      - build
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
       - uses: ./.github/workflows/env-install
 

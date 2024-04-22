@@ -54,7 +54,7 @@ def detect_poetry() -> Command:
         fatal("`poetry` isn't detected")
 
 
-def container_backend() -> Command:
+def container_backend() -> tuple[Command, dict[str, str]]:
     """
     Try to detect a container backend.
     Either podman or docker.
@@ -65,13 +65,16 @@ def container_backend() -> Command:
         CommandNotFound: if a suitable backend can't be found.
     """
     cmd = None
+    env = os.environ.copy()
     for backend in ["docker", "podman"]:
         try:
             cmd = Command(backend)
-            continue
         except CommandNotFound:
-            pass
+            continue
+        if "podman" == backend:
+            env["BUILDAH_FORMAT"] = "docker"
+        break
 
     if not cmd:
         raise CommandNotFound("Unable to find a suitable backend: docker or podman")
-    return cmd
+    return cmd, env

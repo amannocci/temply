@@ -35,7 +35,7 @@ temply = "temply.temply:main"
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 click = "^8.1.7"        # BSD
-jinja2 = "^3.1.3"       # BSD
+jinja2 = "^3.1.4"       # BSD
 PyYAML = "^6.0.1"       # MIT
 
 [tool.poetry.dev-dependencies]

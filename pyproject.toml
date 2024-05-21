@@ -45,8 +45,8 @@ poethepoet = "^0.26.1"      # MIT
 poetry-plugin-up = "^0.7.0" # MIT
 pre-commit = "^3.7.1"       # MIT
 pyinstaller = "^6.6.0"      # GPL 2.0
-pylint = "^3.1.0"           # GPL 2.0
-pytest = "^8.2.0"           # MIT
+pylint = "^3.2.1"           # GPL 2.0
+pytest = "^8.2.1"           # MIT
 sh = "^2.0.6"               # MIT
 toml = "^0.10.2"            # MIT
 

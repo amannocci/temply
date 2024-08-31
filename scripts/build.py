@@ -3,16 +3,21 @@ import sys
 from pathlib import Path
 from time import time
 
-from sh import git, pyinstaller
-
-from scripts.utils import Constants, container_backend, fatal, read_project_conf
+from scripts.utils import (
+    Constants,
+    container_backend,
+    detect_git,
+    detect_pyinstaller,
+    fatal,
+    project_version,
+)
 
 
 def run() -> None:
-    conf = read_project_conf()
+    git = detect_git()
     commit_hash_short = git("rev-parse", "--short", "HEAD").strip()
     current_time_epoch = int(time())
-    version = conf.get("tool.poetry.version")
+    version = project_version()
     python_version = platform.python_version()
 
     image_id = f"{version}-{current_time_epoch}-{commit_hash_short}"
@@ -24,6 +29,7 @@ def run() -> None:
 
     system = platform.system().lower()
     if system == "darwin":
+        pyinstaller = detect_pyinstaller()
         pyinstaller("temply.spec", _out=sys.stdout, _err=sys.stderr)
         arch = platform.machine()
         arch = "amd64" if arch == "x86_64" else arch

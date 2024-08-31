@@ -5,7 +5,7 @@ from pathlib import Path
 
 from sh import ErrorReturnCode
 
-from scripts.utils import Constants, detect_gh, detect_git, fatal, read_project_conf
+from scripts.utils import Constants, detect_gh, detect_git, fatal, project_version
 
 
 def __set_version(version: str) -> None:
@@ -64,8 +64,7 @@ def pre() -> None:
 
 def run() -> None:
     # Read project version
-    conf = read_project_conf()
-    release_version = conf.get("tool.poetry.version")
+    release_version = project_version()
 
     # Create the release tag
     git = detect_git()
@@ -97,10 +96,6 @@ def post() -> None:
         fatal("You must define `NEXT_VERSION` environment variable")
     if not re.match(r"(\d){1,2}\.(\d){1,2}\.(\d){1,2}-dev", next_version):
         fatal("The `NEXT_VERSION` should match semver format.")
-
-    # Read project version
-    conf = read_project_conf()
-    release_version: str = conf.get("tool.poetry.version")  # type: ignore[no-untyped-def]
 
     # Create a new branch
     branch_name = f"feat/post-release-v{next_version}"

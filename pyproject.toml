@@ -5,7 +5,7 @@ line-length = 120
 profile = "black"
 
 [tool.pyright]
-include = ["terranova", "scripts"]
+include = ["temply", "scripts"]
 pythonVersion = "3.11"
 pythonPlatform = "All"
 typeCheckingMode = "standard"
@@ -38,17 +38,14 @@ click = "^8.1.7"        # BSD
 jinja2 = "^3.1.4"       # BSD
 PyYAML = "^6.0.2"       # MIT
 
-[tool.poetry.dev-dependencies]
-black = "^24.8.0"          # MIT
-dotty-dict = "^1.3.1"       # MIT
-poethepoet = "^0.27.0"      # MIT
-poetry-plugin-up = "^0.7.2" # MIT
-pre-commit = "^3.8.0"       # MIT
-pyinstaller = "^6.10.0"      # GPL 2.0
+[tool.poetry.group.build.dependencies]
+pyinstaller = "^6.10.0"     # GPL 2.0
+sh = "^2.0.7"               # MIT
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"           # MIT
 pylint = "^3.2.6"           # GPL 2.0
 pytest = "^8.3.2"           # MIT
-sh = "^2.0.7"               # MIT
-toml = "^0.10.2"            # MIT
 
 [tool.poe.tasks."env:configure"]
 help = "Setup environment."
@@ -57,7 +54,10 @@ script = "scripts.env:configure"
 [tool.poe.tasks."project:upgrade"]
 deps = ["env:configure"]
 help = "Upgrade project dependencies."
-cmd = "poetry up --latest"
+sequence = [
+    { cmd = "poetry up --latest" },
+    { cmd = "pre-commit autoupdate" },
+]
 
 [tool.poe.tasks.wipe]
 shell = """
@@ -74,7 +74,7 @@ interpreter = "python"
 [tool.poe.tasks.generate]
 deps = ["env:configure"]
 help = "Generate configuration files."
-cmd = "pyinstaller -n temply --onefile --noconfirm ./bin/temply"
+script = "scripts.generate:run"
 
 [tool.poe.tasks.lint]
 deps = ["env:configure"]

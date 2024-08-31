@@ -21,5 +21,5 @@ RUN \
 
 # Build
 RUN \
-  poetry install \
+  poetry install --sync --only main,build \
   && poetry run pyinstaller temply.spec

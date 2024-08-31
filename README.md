@@ -25,6 +25,8 @@
 
 - [Python 3.11+](https://docs.python.org/3/) for development.
 - [Poetry](https://python-poetry.org/) for build system.
+- [Poe](https://poethepoet.natn.io/installation.html#install-poe-the-poet-as-a-poetry-plugin) for task runner.
+- [Up](https://github.com/MousaZeidBaker/poetry-plugin-up) for dependency updates.
 - [Podman](https://podman.io/docs) for container packaging.
 - [pre-commit](https://pre-commit.com/) for git management.
 
@@ -42,10 +44,25 @@
 
 The following steps will ensure your project is cloned properly.
 
-1. `git clone https://github.com/amannocci/temply`
-2. `poetry install`
-3. `poetry shell`
-4. `poetry poe env:configure`
+### Setup
+
+The following steps will ensure your project is cloned properly.
+
+1. Clone repository:
+   ```shell
+   git clone https://github.com/amannocci/temply
+   cd temply
+   ```
+2. Use version defined in .python-version:
+   ```shell
+   pyenv install
+   ```
+3. Install dependencies and setup environment:
+   ```shell
+   poetry install
+   poetry shell
+   poetry poe env:configure
+   ```
 
 ### Develop
 

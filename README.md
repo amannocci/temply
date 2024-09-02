@@ -44,10 +44,6 @@
 
 The following steps will ensure your project is cloned properly.
 
-### Setup
-
-The following steps will ensure your project is cloned properly.
-
 1. Clone repository:
    ```shell
    git clone https://github.com/amannocci/temply
@@ -91,7 +87,7 @@ poetry poe lint
 poetry poe fmt
 ```
 
-- It will format the project code using `black`.
+- It will format the project code using `black` and `isort`.
 
 ### Build
 

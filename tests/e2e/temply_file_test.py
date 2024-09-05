@@ -2,7 +2,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from temply.temply import main
+from temply.cli import main
 from tests import PROJECT_TESTS_FIXTURES_DIR
 
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from temply.temply import main
+from temply.cli import main
 
 
 def test_template(runner: CliRunner) -> None:

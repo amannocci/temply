@@ -52,7 +52,6 @@ help = "Setup environment."
 script = "scripts.env:configure"
 
 [tool.poe.tasks."project:upgrade"]
-deps = ["env:configure"]
 help = "Upgrade project dependencies."
 sequence = [
     { cmd = "poetry up --latest" },
@@ -69,20 +68,18 @@ for path in ["build", "dist"]:
     except FileNotFoundError as err:
         print(f"Skipping {path} deletion...")
 """
+help = "Wipe project environment."
 interpreter = "python"
 
 [tool.poe.tasks.generate]
-deps = ["env:configure"]
 help = "Generate configuration files."
 script = "scripts.generate:run"
 
 [tool.poe.tasks.lint]
-deps = ["env:configure"]
 help = "Lint code project."
 cmd = "pylint temply"
 
 [tool.poe.tasks.fmt]
-deps = ["env:configure"]
 help = "Format code project."
 sequence = [
     { cmd = "isort temply tests scripts" },
@@ -90,27 +87,23 @@ sequence = [
 ]
 
 [tool.poe.tasks.build]
-deps = ["wipe", "env:configure"]
+deps = ["wipe"]
 help = "Build standalone binary."
 script = "scripts.build:run"
 
 [tool.poe.tasks.test]
-deps = ["env:configure"]
 help = "Run all tests."
 cmd = "pytest tests"
 
 [tool.poe.tasks."release:pre"]
-deps = ["env:configure"]
 help = "Create a PR with changes for release."
 script = "scripts.release:pre"
 
 [tool.poe.tasks."release"]
-deps = ["env:configure"]
 help = "Create a new temply release."
 script = "scripts.release:run"
 
 [tool.poe.tasks."release:post"]
-deps = ["env:configure"]
 help = "Prepare next iteration."
 script = "scripts.release:post"
 

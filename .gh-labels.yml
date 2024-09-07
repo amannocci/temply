@@ -1,5 +1,7 @@
 ---
 
+# Ref: github-label-sync --access-token "$(gh auth token)" --labels .gh-labels.yml amannocci/temply
+
 - name: "platform: all"
   color: "d93f0b"
   aliases: []

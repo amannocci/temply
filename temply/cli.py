@@ -17,9 +17,17 @@ from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 @click.option("--dotenv", help="Load environment variables from dotenv file", type=click.Path())
 @click.option("--json-file", help="Load environment variables from json file", type=click.Path())
 @click.option("-o", "--output-file", help="Output file path.", type=click.Path())
-@click.version_option(f"{__version__}")
+@click.version_option(__version__)
 @click.argument("input_file", required=False)
-def main(allow_missing, keep_template, envdir, dotenv, json_file, output_file, input_file) -> None:
+def main(
+    allow_missing: bool,
+    keep_template: bool,
+    envdir: Path | None,
+    dotenv: Path | None,
+    json_file: Path | None,
+    output_file: Path | None,
+    input_file: Path | None,
+) -> None:
     """Render jinja2 templates on the command line with environment variables."""
     # Define undefined behaviour
     if allow_missing:

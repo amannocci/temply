@@ -8,8 +8,8 @@ from tests import PROJECT_TESTS_FIXTURES_DIR
 
 def test_wrong_file_template(runner: CliRunner) -> None:
     result = runner.invoke(main, args=["unknown"])
-    assert result.exit_code == 1
-    assert "Must be a regular file" in result.stdout
+    assert result.exit_code == 2
+    assert "does not exist" in result.stdout
 
 
 def test_missing_env(runner: CliRunner) -> None:
@@ -141,5 +141,5 @@ def test_wrong_dotenv_template(runner: CliRunner) -> None:
     result = runner.invoke(
         main, args=["--keep-template", "--dotenv", wrong_dotenv_path, path], env={"MY_FOO": "foo", "MY_BAR": "bar"}
     )
-    assert "Must be a regular file" in result.output
-    assert result.exit_code == 1
+    assert "does not exist" in result.output
+    assert result.exit_code == 2

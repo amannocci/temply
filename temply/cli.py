@@ -6,19 +6,38 @@ from jinja2 import DictLoader, Environment, FileSystemLoader
 
 from . import __version__
 from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
-from .loaders import DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
+from .loaders import ChainLoader, DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 
 
 # pylint: disable=R0913,R0914
 @click.command("temply")
 @click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
 @click.option("--keep-template", help="Keep original template file.", is_flag=True)
-@click.option("--envdir", help="Load environment variables from directory", type=click.Path())
-@click.option("--dotenv", help="Load environment variables from dotenv file", type=click.Path())
-@click.option("--json-file", help="Load environment variables from json file", type=click.Path())
-@click.option("-o", "--output-file", help="Output file path.", type=click.Path())
+@click.option(
+    "--envdir",
+    help="Load environment variables from directory",
+    type=click.Path(exists=True, readable=True, file_okay=False, path_type=Path),
+)
+@click.option(
+    "--dotenv",
+    help="Load environment variables from dotenv file",
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--json-file",
+    help="Load environment variables from json file",
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "-o",
+    "--output-file",
+    help="Output file path.",
+    type=click.Path(writable=True, dir_okay=False, path_type=Path),
+)
 @click.version_option(__version__)
-@click.argument("input_file", required=False)
+@click.argument(
+    "input_file", required=False, type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path)
+)
 def main(
     allow_missing: bool,
     keep_template: bool,
@@ -37,16 +56,11 @@ def main(
 
     # Decide if we use stdin or regular file
     if input_file:
-        # Check template path is a regular file
-        template_path = Path(input_file)
-        if not template_path.is_file():
-            raise click.FileError(str(template_path.absolute()), "Must be a regular file")
-
         # Template name
-        template_name = str(template_path.name)
+        template_name = str(input_file.name)
 
         # Set loader
-        loader = FileSystemLoader(template_path.parent.absolute())
+        loader = FileSystemLoader(input_file.parent.absolute())
     else:
         # Template name
         template_name = "stdin_template"
@@ -74,10 +88,15 @@ def main(
     template.globals["environment"] = get_environment
 
     # Compute env
-    envs = EnvLoader().load()
-    envs = EnvdirLoader(envdir).load(envs) if envdir else envs
-    envs = DotenvLoader(dotenv).load(envs) if dotenv else envs
-    envs = JsonFileLoader(json_file).load(envs) if json_file else envs
+    loaders = [EnvLoader()]
+    if envdir:
+        loaders.append(EnvdirLoader(envdir))
+    if dotenv:
+        loaders.append(DotenvLoader(dotenv))
+    if json_file:
+        loaders.append(JsonFileLoader(json_file))
+    envs = ChainLoader(loaders).load()
+
     try:
         rendering = template.render(**envs)
     except jinja2.UndefinedError as err:

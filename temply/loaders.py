@@ -11,19 +11,32 @@ class Loader(ABC):
     """Abstract loader"""
 
     @abstractmethod
-    def load(self, ref: dict | None = None) -> dict:
+    def load(self) -> dict:
         """
-        Load environments variables into ref dict.
-        :param ref: ref dict context.
+        Load from data source.
         """
-        return ref or {}
+        return {}
+
+
+class ChainLoader(Loader):
+    """Chain loader implementation"""
+
+    def __init__(self, loaders: list[Loader]) -> None:
+        """Init chain loader."""
+        self.__loaders = loaders
+
+    def load(self) -> dict:
+        ctx = {}
+        for loader in self.__loaders:
+            ctx = {**ctx, **loader.load()}
+        return ctx
 
 
 class EnvLoader(Loader):
     """Environment loader implementation"""
 
-    def load(self, ref: dict | None = None) -> dict:
-        ctx = ref if ref else {}
+    def load(self) -> dict:
+        ctx = {}
         for key, value in os.environ.items():
             ctx[key] = value
         return ctx
@@ -32,13 +45,13 @@ class EnvLoader(Loader):
 class EnvdirLoader(Loader):
     """Environment directory loader implementation"""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Path) -> None:
         """Init envdir loader."""
         self.__path = path
 
-    def load(self, ref: dict | None = None) -> dict:
-        ctx = ref if ref else {}
-        for root, _, files in os.walk(self.__path, followlinks=False):
+    def load(self) -> dict:
+        ctx = {}
+        for root, _, files in os.walk(self.__path.as_posix(), followlinks=False):
             for file in files:
                 with open(os.path.join(root, file), "r", encoding="utf-8") as file_descriptor:
                     value = file_descriptor.read().strip("\n\t ").replace("\x00", "\n")
@@ -52,27 +65,26 @@ class EnvdirLoader(Loader):
 class DotenvLoader(Loader):
     """Environment file loader implementation"""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Path) -> None:
         """Init dotenv loader."""
         self.__path = path
 
-    def load(self, ref: dict | None = None) -> dict:
-        ctx = ref if ref else {}
+    def load(self) -> dict:
+        ctx = {}
 
         # Check dotfile is a regular file
-        dotfile_path = Path(self.__path)
-        if not dotfile_path.is_file():
-            raise click.FileError(str(dotfile_path.absolute()), "Must be a regular file")
+        if not self.__path.is_file():
+            raise click.FileError(str(self.__path.absolute()), "Must be a regular file")
 
         # Process
         try:
-            value = dotfile_path.read_text(encoding="utf-8")
+            value = self.__path.read_text(encoding="utf-8")
             lines = value.splitlines()
             for line in lines:
                 key, value = line.split("=", 1)
                 ctx[key] = value
         except OSError as err:
-            raise click.FileError(str(dotfile_path.absolute()), str(err))
+            raise click.FileError(str(self.__path.absolute()), str(err))
 
         return ctx
 
@@ -80,25 +92,24 @@ class DotenvLoader(Loader):
 class JsonFileLoader(Loader):
     """Environment json file loader implementation"""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Path) -> None:
         """Init json file loader."""
         self.__path = path
 
-    def load(self, ref: dict | None = None) -> dict:
-        ctx = ref if ref else {}
+    def load(self) -> dict:
+        ctx = {}
 
         # Check json file is a regular file
-        json_file_path = Path(self.__path)
-        if not json_file_path.is_file():
-            raise click.FileError(str(json_file_path.absolute()), "Must be a regular file")
+        if not self.__path.is_file():
+            raise click.FileError(str(self.__path.absolute()), "Must be a regular file")
 
         # Process
         try:
-            values = json.loads(json_file_path.read_text(encoding="utf-8"))
+            values = json.loads(self.__path.read_text(encoding="utf-8"))
             for val in values:
                 if val.get("key"):
                     ctx[val.get("key")] = val.get("value")
         except OSError as err:
-            raise click.FileError(str(json_file_path.absolute()), str(err))
+            raise click.FileError(str(self.__path.absolute()), str(err))
 
         return ctx

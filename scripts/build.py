@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from time import time
 
+from sh import Command
+
 from scripts.utils import (
     Constants,
     container_backend,
@@ -34,6 +36,7 @@ def run() -> None:
         arch = platform.machine()
         arch = "amd64" if arch == "x86_64" else arch
         Path("./dist/temply").replace(Path(f"./dist/temply-{version}-{system}-{arch}"))
+        Command(f"./dist/temply-{version}-{system}-{arch}")("--version", _out=sys.stdout, _err=sys.stderr)
     elif system == "linux":
         # Use cross-build to build both amd64 and arm64 versions.
         cmd, env = container_backend()
@@ -82,5 +85,6 @@ def run() -> None:
                 _err=sys.stderr,
                 _env=env,
             )
+            Command(f"./dist/temply-{version}-linux-{arch}")("--version", _out=sys.stdout, _err=sys.stderr)
     else:
         fatal(f"Unsupported system: {system}")

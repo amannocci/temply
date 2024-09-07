@@ -38,6 +38,11 @@
 - Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
 - Support loading from environment variables.
 
+## :dart: Motivation
+
+- We needed a way to generate files using data sources in a container environment.
+- The solution should be standalone and delivered as a binary.
+
 ## :hammer: Workflow
 
 ### Setup
@@ -59,17 +64,6 @@ The following steps will ensure your project is cloned properly.
    poetry shell
    poetry poe env:configure
    ```
-
-### Develop
-
-- To build `temply` in dev mode you will need to install prerequisites packages.
-- Run the command below to install `temply` in dev mode into your local environment.
-
-```bash
-poetry poe env:configure
-```
-
-- You can now develop awesome `temply` features interactively by running `temply` command.
 
 ### Lint
 
@@ -120,7 +114,7 @@ poetry poe test
 - When the project start, it will look at the template, found the directory of the template and then configure jinja2
   the filesystem.
 - It will then attempt to render the template and create a file or display on stdout.
-- You can use any [jinja2](https://jinja.palletsprojects.com/en/3.0.x/templates/) syntax.
+- You can use any [jinja2](https://jinja.palletsprojects.com/en/3.1.x/templates/) syntax.
 
 ### How to render a simple configuration
 

@@ -17,6 +17,18 @@ runs:
       if: matrix.os == 'ubuntu-latest'
       uses: docker/setup-buildx-action@v3
 
+    - name: Install arm64 libraries
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo sed -i 's/deb/deb [arch=amd64]/g' /etc/apt/sources.list
+        sudo dpkg --add-architecture arm64
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main universe" | sudo tee /etc/apt/sources.list.d/arm64.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main universe" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-security main universe" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+        sudo apt-get update > /dev/null
+        sudo apt-get install libc6:arm64 zlib1g:arm64 -y
+      shell: bash
+
     - uses: actions/setup-python@v5
       with:
         python-version-file: ".python-version"

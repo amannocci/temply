@@ -44,7 +44,7 @@ sh = "^2.0.7"               # MIT
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"           # MIT
-pylint = "^3.2.6"           # GPL 2.0
+pylint = "^3.3.0"           # GPL 2.0
 pytest = "^8.3.3"           # MIT
 
 [tool.poe.tasks."env:configure"]

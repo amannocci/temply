@@ -9,7 +9,7 @@ from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
 from .loaders import ChainLoader, DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 
 
-# pylint: disable=R0913,R0914
+# pylint: disable=too-many-arguments,too-many-locals,too-many-positional-arguments
 @click.command("temply")
 @click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
 @click.option("--keep-template", help="Keep original template file.", is_flag=True)

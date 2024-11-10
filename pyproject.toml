@@ -39,7 +39,7 @@ jinja2 = "^3.1.4"       # BSD
 PyYAML = "^6.0.2"       # MIT
 
 [tool.poetry.group.build.dependencies]
-pyinstaller = "^6.11.0"     # GPL 2.0
+pyinstaller = "^6.11.1"     # GPL 2.0
 sh = "^2.1.0"               # MIT
 
 [tool.poetry.group.dev.dependencies]

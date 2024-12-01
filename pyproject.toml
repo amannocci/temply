@@ -44,8 +44,8 @@ sh = "^2.1.0"               # MIT
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"           # MIT
-pylint = "^3.3.1"           # GPL 2.0
-pytest = "^8.3.3"           # MIT
+pylint = "^3.3.2"           # GPL 2.0
+pytest = "^8.3.4"           # MIT
 
 [tool.poe.tasks."env:configure"]
 help = "Setup environment."

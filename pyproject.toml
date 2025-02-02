@@ -34,17 +34,17 @@ temply = "temply.temply:main"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-click = "^8.1.7"        # BSD
-jinja2 = "^3.1.4"       # BSD
+click = "^8.1.8"        # BSD
+jinja2 = "^3.1.5"       # BSD
 PyYAML = "^6.0.2"       # MIT
 
 [tool.poetry.group.build.dependencies]
 pyinstaller = "^6.11.1"     # GPL 2.0
-sh = "^2.1.0"               # MIT
+sh = "^2.2.1"               # MIT
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"           # MIT
-pylint = "^3.3.2"           # GPL 2.0
+black = "^25.1.0"           # MIT
+pylint = "^3.3.4"           # GPL 2.0
 pytest = "^8.3.4"           # MIT
 
 [tool.poe.tasks."env:configure"]

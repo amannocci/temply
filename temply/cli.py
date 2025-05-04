@@ -9,7 +9,6 @@ from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
 from .loaders import ChainLoader, DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
 
 
-# pylint: disable=too-many-arguments,too-many-locals,too-many-positional-arguments
 @click.command("temply")
 @click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
 @click.option("--keep-template", help="Keep original template file.", is_flag=True)
@@ -36,7 +35,9 @@ from .loaders import ChainLoader, DotenvLoader, EnvdirLoader, EnvLoader, JsonFil
 )
 @click.version_option(__version__)
 @click.argument(
-    "input_file", required=False, type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path)
+    "input_file",
+    required=False,
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
 )
 def main(
     allow_missing: bool,
@@ -70,7 +71,11 @@ def main(
 
     # Setup environment
     env = Environment(
-        loader=loader, undefined=undefined_behaviour, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True
+        loader=loader,
+        undefined=undefined_behaviour,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True,
     )
 
     # Setup env
@@ -100,7 +105,6 @@ def main(
     try:
         rendering = template.render(**envs)
     except jinja2.UndefinedError as err:
-        # pylint: disable=W0719
         raise Exception(err) from err
 
     # Remove template

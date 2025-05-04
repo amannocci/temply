@@ -13,7 +13,9 @@ def __set_version(version: str) -> None:
     try:
         Constants.TEMPLY_INIT_PATH.write_text(f"""__version__ = \"{version}\"\n""")
     except Exception as err:
-        fatal(f"The `{Constants.TEMPLY_INIT_PATH.as_posix()}` file can't be written", err)
+        fatal(
+            f"The `{Constants.TEMPLY_INIT_PATH.as_posix()}` file can't be written", err
+        )
 
     # Update project version
     try:
@@ -46,7 +48,14 @@ def pre() -> None:
 
     # Push release branch
     git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git("commit", "-m", f"release: temply v{release_version}", "--no-verify", _out=sys.stdout, _err=sys.stderr)
+    git(
+        "commit",
+        "-m",
+        f"release: temply v{release_version}",
+        "--no-verify",
+        _out=sys.stdout,
+        _err=sys.stderr,
+    )
     git("push", "origin", branch_name, _out=sys.stdout, _err=sys.stderr)
 
     # Create a PR
@@ -63,7 +72,7 @@ def pre() -> None:
 
 
 def run() -> None:
-    # Read project version
+    # Read the project version
     release_version = project_version()
 
     # Create the release tag
@@ -84,8 +93,13 @@ def run() -> None:
         release_version,
     ]
     gh = detect_gh()
-    binaries = [file.absolute().as_posix() for file in Path(".").glob("./temply-*")]
+    binaries = [
+        file.absolute().as_posix()
+        for file in Path("dist").glob("./temply*")
+        if file.is_file()
+    ]
     args.extend(binaries)
+    gh = detect_gh()
     gh(args, _out=sys.stdout, _err=sys.stderr)
 
 

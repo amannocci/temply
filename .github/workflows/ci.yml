@@ -2,6 +2,7 @@
 name: CI
 
 on:
+  workflow_call:
   pull_request:
     branches:
       - main
@@ -20,7 +21,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +29,7 @@ jobs:
         uses: ./.github/workflows/env-install
 
       - name: Lint
-        run: poetry run poe lint
+        run: uv run poe lint
 
   build:
     needs:
@@ -36,25 +37,44 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-14
-          - macos-13
-          - ubuntu-latest
-    runs-on: ${{ matrix.os }}
+          - runner: macos-14
+            target: darwin-arm64
+          - runner: macos-13
+            target: darwin-amd64
+          - runner: ubuntu-22.04
+            target: linux-amd64
+          - runner: ubuntu-22.04-arm
+            target: linux-arm64
+    runs-on: ${{ matrix.os.runner }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install environment
         uses: ./.github/workflows/env-install
-        with:
-          only: 'main,build'
 
       - name: Build
-        run: poetry run poe build
+        run: uv run poe build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: temply-tarball-${{ matrix.os.target }}
+          path: dist/
 
   test:
     needs:
       - build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - runner: macos-14
+            target: darwin-arm64
+          - runner: macos-13
+            target: darwin-amd64
+          - runner: ubuntu-22.04
+            target: linux-amd64
+          - runner: ubuntu-22.04-arm
+            target: linux-arm64
+    runs-on: ${{ matrix.os.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -62,4 +82,4 @@ jobs:
         uses: ./.github/workflows/env-install
 
       - name: Test
-        run: poetry run poe test
+        run: uv run poe test

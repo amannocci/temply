@@ -15,33 +15,15 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os:
-          - macos-14
-          - macos-13
-          - ubuntu-latest
-    runs-on: ${{ matrix.os }}
+  ci:
     permissions:
+      contents: read
       id-token: write
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install environment
-        uses: ./.github/workflows/env-install
-
-      - name: Build
-        run: poetry run poe build
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: temply-${{ matrix.os }}
-          path: "dist/*"
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
 
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - build
     permissions:
@@ -51,7 +33,9 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          pattern: ensemble-tarball-*
           merge-multiple: true
+          path: dist
 
       - uses: ./.github/workflows/env-install
 
@@ -63,7 +47,7 @@ jobs:
   post-release:
     needs:
       - release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write

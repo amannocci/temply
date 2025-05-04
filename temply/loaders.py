@@ -6,7 +6,6 @@ from pathlib import Path
 import click
 
 
-# pylint: disable=R0903
 class Loader(ABC):
     """Abstract loader"""
 
@@ -53,7 +52,9 @@ class EnvdirLoader(Loader):
         ctx = {}
         for root, _, files in os.walk(self.__path.as_posix(), followlinks=False):
             for file in files:
-                with open(os.path.join(root, file), "r", encoding="utf-8") as file_descriptor:
+                with open(
+                    os.path.join(root, file), "r", encoding="utf-8"
+                ) as file_descriptor:
                     value = file_descriptor.read().strip("\n\t ").replace("\x00", "\n")
                     if len(value) > 0:
                         ctx[file] = value

@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Final, NoReturn
@@ -9,12 +10,20 @@ from sh import Command, CommandNotFound
 class Constants:
     """All constants"""
 
-    # pylint: disable=R0903
+    DIST_PATH: Final[Path] = Path("dist")
+    DISTRIBUTIONS_TARBALL_PATH: Final[Path] = Path("distributions") / "tarball"
+    DISTRIBUTIONS_TARBALL_LINUX_SPEC_PATH: Final[Path] = (
+        DISTRIBUTIONS_TARBALL_PATH / "temply.linux.spec"
+    )
+    DISTRIBUTIONS_TARBALL_MACOS_SPEC_PATH: Final[Path] = (
+        DISTRIBUTIONS_TARBALL_PATH / "temply.macOS.spec"
+    )
     ENCODING_UTF_8: Final[str] = "utf-8"
+    PYINSTALLER_SPEC_PATH: Final[Path] = Path("temply.spec")
     PYPROJECT_PATH: Final[Path] = Path("pyproject.toml")
     PYRIGHTCONFIG_PATH: Final[Path] = Path("pyrightconfig.json")
     REGISTRY_URL: str = os.getenv("REGISTRY_URL", "local.dev")
-    TEMPLY_INIT_PATH: Final[Path] = Path("./temply/__init__.py")
+    TEMPLY_INIT_PATH: Final[Path] = Path("temply") / "__init__.py"
 
 
 def fatal(msg: str, err: Exception | None = None) -> NoReturn:
@@ -25,16 +34,16 @@ def fatal(msg: str, err: Exception | None = None) -> NoReturn:
     sys.exit(1)
 
 
-def detect_poetry() -> Command:
+def detect_uv() -> Command:
     """
-    Try to detect poetry.
+    Try to detect uv.
     Returns:
-        a command if poetry is detected.
+        a command if uv is detected.
     """
     try:
-        return Command("poetry")
+        return Command("uv")
     except CommandNotFound:
-        fatal("`poetry` isn't detected")
+        fatal("`uv` isn't detected")
 
 
 def detect_gh() -> Command:
@@ -78,9 +87,10 @@ def project_version() -> str:
     Returns:
         current project version.
     """
-    poetry = detect_poetry()
-    version = poetry("version", "-s", _err=sys.stderr)
-    return version.strip()
+    uv = detect_uv()
+    details = uv("pip", "show", "temply", _err=sys.stderr)
+    version = re.search(r"Version: (.*)", details).group(1)
+    return version.replace(".dev0", "-dev").strip()
 
 
 def container_backend() -> tuple[Command, dict[str, str]]:

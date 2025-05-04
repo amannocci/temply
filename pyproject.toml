@@ -1,75 +1,74 @@
-[tool.black]
-line-length = 120
-
-[tool.isort]
-profile = "black"
-
 [tool.pyright]
 include = ["temply", "scripts"]
 pythonVersion = "3.11"
 pythonPlatform = "All"
 typeCheckingMode = "standard"
 
-[tool.poetry]
+[project]
 name = "temply"
 version = "0.7.5-dev"
 description = "Render jinja2 templates on the command line with shell environment variables."
-authors = ["Adrien Mannocci <adrien.mannocci@gmail.com>"]
-license = "Apache-2.0"
+authors = [
+    { name = "Adrien Mannocci", email = "adrien.mannocci@gmail.com" }
+]
+license = { text = "Apache-2.0" }
 readme = "README.md"
-repository = "https://github.com/amannocci/temply"
-documentation = "https://github.com/amannocci/temply"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.11",
 ]
-packages = [{ include = "temply" }]
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "click>=8.1.7", # BSD
+    "jinja2>=3.1.4", # BSD
+    "PyYAML>=6.0.2", # MIT
+]
 
-[tool.poetry.scripts]
-temply = "temply.temply:main"
+[project.urls]
+Repository = "https://github.com/amannocci/temply"
+Documentation = "https://github.com/amannocci/temply"
+Changelog = "https://github.com/amannocci/temply/CHANGELOG.md"
+Tracker = "https://github.com/amannocci/temply/issues"
 
-[tool.poetry.urls]
-"Changelog" = "https://github.com/amannocci/temply/CHANGELOG.md"
-"Tracker" = "https://github.com/amannocci/temply/issues"
+[project.scripts]
+temply = "temply.cli:main"
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-click = "^8.1.7"        # BSD
-jinja2 = "^3.1.4"       # BSD
-PyYAML = "^6.0.2"       # MIT
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.build.dependencies]
-pyinstaller = "^6.11.1"     # GPL 2.0
-sh = "^2.1.0"               # MIT
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"           # MIT
-pylint = "^3.3.2"           # GPL 2.0
-pytest = "^8.3.4"           # MIT
+[dependency-groups]
+dev = [
+    "poethepoet>=0.32.2", # MIT
+    "pyinstaller>=6.13.0", # GPL-2.0: https://pyinstaller.org/en/stable/license.html
+    "pytest>=8.3.5", # MIT
+    "ruff>=0.11.5", # MIT
+    "sh>=2.1.0", # MIT
+]
 
 [tool.poe.tasks."env:configure"]
 help = "Setup environment."
 script = "scripts.env:configure"
 
-[tool.poe.tasks."project:upgrade"]
-help = "Upgrade project dependencies."
-sequence = [
-    { cmd = "poetry up --latest" },
-    { cmd = "pre-commit autoupdate" },
-]
-
-[tool.poe.tasks.wipe]
+[tool.poe.tasks."env:wipe"]
 shell = """
 import shutil
 
 for path in ["build", "dist"]:
     try:
         shutil.rmtree(path)
-    except FileNotFoundError as err:
+    except FileNotFoundError:
         print(f"Skipping {path} deletion...")
 """
 help = "Wipe project environment."
 interpreter = "python"
+
+[tool.poe.tasks."project:upgrade"]
+help = "Upgrade project dependencies."
+sequence = [
+    { cmd = "uv sync -U" },
+    { cmd = "pre-commit autoupdate" },
+]
 
 [tool.poe.tasks.generate]
 help = "Generate configuration files."
@@ -77,17 +76,17 @@ script = "scripts.generate:run"
 
 [tool.poe.tasks.lint]
 help = "Lint code project."
-cmd = "pylint temply"
+cmd = "ruff check temply"
 
 [tool.poe.tasks.fmt]
 help = "Format code project."
 sequence = [
-    { cmd = "isort temply tests scripts" },
-    { cmd = "black temply tests scripts" },
+    { cmd = "ruff check --select I --fix" },
+    { cmd = "ruff format" },
 ]
 
 [tool.poe.tasks.build]
-deps = ["wipe"]
+deps = ["env:wipe"]
 help = "Build standalone binary."
 script = "scripts.build:run"
 
@@ -107,6 +106,8 @@ script = "scripts.release:run"
 help = "Prepare next iteration."
 script = "scripts.release:post"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["temply"]

@@ -1,0 +1,23 @@
+name: "temply"
+arch: "arm64"
+version: "0.7.5-dev"
+section: "default"
+priority: "extra"
+maintainer: "Adrien Mannocci <adrien.mannocci@gmail.com>"
+description: |
+  Render jinja2 templates on the command line with shell environment variables.
+vendor: "techcode.io"
+homepage: "https://github.com/amannocci/temply"
+license: "Apache-2.0"
+contents:
+  - src: ./dist/temply/_internal
+    dst: /opt/temply/_internal
+
+  - src: ./dist/temply/temply
+    dst: /opt/temply/temply
+    file_info:
+      mode: 0555
+
+  - src: /opt/temply/temply
+    dst: /usr/bin/temply
+    type: symlink

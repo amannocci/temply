@@ -24,9 +24,8 @@
 ## :package: Prerequisites
 
 - [Python 3.11+](https://docs.python.org/3/) for development.
-- [Poetry](https://python-poetry.org/) for build system.
-- [Poe](https://poethepoet.natn.io/installation.html#install-poe-the-poet-as-a-poetry-plugin) for task runner.
-- [Up](https://github.com/MousaZeidBaker/poetry-plugin-up) for dependency updates.
+- [uv](https://docs.astral.sh/uv/) for build system.
+- [Poe](https://poethepoet.natn.io/installation.html) for task runner.
 - [Podman](https://podman.io/docs) for container packaging.
 - [pre-commit](https://pre-commit.com/) for git management.
 
@@ -54,15 +53,10 @@ The following steps will ensure your project is cloned properly.
    git clone https://github.com/amannocci/temply
    cd temply
    ```
-2. Use version defined in .python-version:
+2. Install dependencies and setup environment:
    ```shell
-   pyenv install
-   ```
-3. Install dependencies and setup environment:
-   ```shell
-   poetry install
-   poetry shell
-   poetry poe env:configure
+   uv sync
+   uv run poe env:configure
    ```
 
 ### Lint
@@ -70,7 +64,7 @@ The following steps will ensure your project is cloned properly.
 - To lint you have to use the workflow.
 
 ```bash
-poetry poe lint
+uv run poe lint
 ```
 
 ### Format
@@ -78,17 +72,17 @@ poetry poe lint
 - To format you have to use the workflow.
 
 ```bash
-poetry poe fmt
+uv run poe fmt
 ```
 
-- It will format the project code using `black` and `isort`.
+- It will format the project code using `ruff`.
 
 ### Build
 
 - To build you have to use the workflow.
 
 ```bash
-poetry poe build
+uv run poe build
 ```
 
 - It will compile project code with the current environment.
@@ -99,7 +93,7 @@ poetry poe build
 - Tests are based on `pytest`.
 
 ```bash
-poetry poe test
+uv run poe test
 ```
 
 ## 📖 Usage

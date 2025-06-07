@@ -94,6 +94,22 @@ script = "scripts.build:run"
 help = "Run all tests."
 cmd = "pytest tests"
 
+[tool.poe.tasks."package:deb"]
+control.expr = "sys.platform"
+help = "Build debian packages."
+
+[[tool.poe.tasks."package:deb".switch]]
+case = "linux"
+script = "scripts.package:deb"
+
+[tool.poe.tasks."package:rpm"]
+control.expr = "sys.platform"
+help = "Build rpm packages."
+
+[[tool.poe.tasks."package:rpm".switch]]
+case = "linux"
+script = "scripts.package:rpm"
+
 [tool.poe.tasks."release:pre"]
 help = "Create a PR with changes for release."
 script = "scripts.release:pre"

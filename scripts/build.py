@@ -37,12 +37,12 @@ def run() -> None:
     finally:
         Constants.PYINSTALLER_SPEC_PATH.unlink(missing_ok=True)
 
-    # Make ensemble executable
-    ensemble_exec = Path("./dist/temply/temply")
-    ensemble_exec.chmod(ensemble_exec.stat().st_mode | stat.S_IEXEC)
+    # Make temply executable
+    temply_exec = Path("./dist/temply/temply")
+    temply_exec.chmod(temply_exec.stat().st_mode | stat.S_IEXEC)
 
-    # Check ensemble bundle is working
-    Command(ensemble_exec)("--version", _out=sys.stdout, _err=sys.stderr)
+    # Check temply bundle is working
+    Command(temply_exec)("--version", _out=sys.stdout, _err=sys.stderr)
 
     # Create a tarball for macOS
     if system == "darwin":

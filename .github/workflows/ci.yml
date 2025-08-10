@@ -101,7 +101,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: temply-tarball-${{ matrix.os.target }}
           path: dist
@@ -131,7 +131,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: temply-tarball-${{ matrix.os.target }}
           path: dist
@@ -159,7 +159,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: temply-package-deb-${{ matrix.os.target }}
           path: dist
@@ -187,7 +187,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           pattern: temply-tarball-darwin-*
           merge-multiple: true

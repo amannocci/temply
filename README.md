@@ -1,10 +1,10 @@
-<h1 align="center">Temply</h1>
+<h1 style="margin-left: auto; margin-right: auto;">Temply</h1>
 
-<p align="center">
-  <i align="center">Render jinja2 templates on the command line without python runtime.</i>
+<p style="margin-left: auto; margin-right: auto;">
+  <i>Render jinja2 templates on the command line without python runtime.</i>
 </p>
 
-<h4 align="center">
+<h4 style="margin-left: auto; margin-right: auto;">
   <a href="[https://github.com/amannocci/temply/actions/workflows/ci.yml](https://github.com/amannocci/temply/actions/workflows/ci.yml)">
     <img src="https://img.shields.io/github/actions/workflow/status/amannocci/temply/ci.yml?branch=main&label=ci&style=flat-square" alt="continuous integration" style="height: 20px;">
   </a>
@@ -23,7 +23,7 @@
 
 ## :package: Prerequisites
 
-- [Python 3.11+](https://docs.python.org/3/) for development.
+- [Python 3.12+](https://docs.python.org/3/) for development.
 - [uv](https://docs.astral.sh/uv/) for build system.
 - [Poe](https://poethepoet.natn.io/installation.html) for task runner.
 - [Podman](https://podman.io/docs) for container packaging.

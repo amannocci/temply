@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/workflows/env-install
 
       - name: Run pre-release step
-        run: poetry run poe release:pre
+        run: uv run poe release:pre
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}

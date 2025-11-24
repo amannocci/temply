@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Ref: https://docs.astral.sh/uv/concepts/projects/sync/#checking-if-the-lockfile-is-up-to-date
+  UV_FROZEN: "true"
+
 concurrency:
   group: ${{ github.workflow }}
 
@@ -25,7 +29,7 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     needs:
-      - build
+      - ci
     permissions:
       contents: write
     steps:
@@ -37,12 +41,19 @@ jobs:
           merge-multiple: true
           path: dist
 
-      - uses: ./.github/workflows/env-install
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: temply-package-*
+          merge-multiple: true
+          path: dist
+
+      - name: Install environment
+        uses: ./.github/workflows/env-install
 
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: poetry run poe release
+        run: uv run poe release
 
   post-release:
     needs:
@@ -63,7 +74,7 @@ jobs:
         uses: ./.github/workflows/env-install
 
       - name: Run post-release step
-        run: poetry run poe release:post
+        run: uv run poe release:post
         env:
           GH_TOKEN: ${{ github.token }}
           NEXT_VERSION: ${{ inputs.version }}

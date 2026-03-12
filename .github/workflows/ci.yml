@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: uv run poe build
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: temply-tarball-${{ matrix.os.target }}
           path: dist/
@@ -101,7 +101,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: temply-tarball-${{ matrix.os.target }}
           path: dist
@@ -109,7 +109,7 @@ jobs:
       - name: Build deb packages
         run: uv run poe package:deb
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: temply-package-deb-${{ matrix.os.target }}
           path: dist/
@@ -131,7 +131,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: temply-tarball-${{ matrix.os.target }}
           path: dist
@@ -139,7 +139,7 @@ jobs:
       - name: Build rpm packages
         run: uv run poe package:rpm
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: temply-package-rpm-${{ matrix.os.target }}
           path: dist/
@@ -159,7 +159,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: temply-package-deb-${{ matrix.os.target }}
           path: dist
@@ -187,7 +187,7 @@ jobs:
       - name: Install environment
         uses: ./.github/workflows/env-install
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           pattern: temply-tarball-darwin-*
           merge-multiple: true

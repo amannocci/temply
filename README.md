@@ -1,14 +1,14 @@
-<h1 style="margin-left: auto; margin-right: auto;">Temply</h1>
+<h1 align="center">Temply</h1>
 
-<p style="margin-left: auto; margin-right: auto;">
+<p align="center">
   <i>Render jinja2 templates on the command line without python runtime.</i>
 </p>
 
-<h4 style="margin-left: auto; margin-right: auto;">
-  <a href="[https://github.com/amannocci/temply/actions/workflows/ci.yml](https://github.com/amannocci/temply/actions/workflows/ci.yml)">
+<h4 align="center">
+  <a href="[https://github.com/techcode-io/temply/actions/workflows/ci.yml](https://github.com/techcode-io/temply/actions/workflows/ci.yml)">
     <img src="https://img.shields.io/github/actions/workflow/status/amannocci/temply/ci.yml?branch=main&label=ci&style=flat-square" alt="continuous integration" style="height: 20px;">
   </a>
-  <a href="https://github.com/amannocci/temply/graphs/contributors">
+  <a href="https://github.com/techcode-io/temply/graphs/contributors">
     <img src="https://img.shields.io/github/contributors-anon/amannocci/temply?color=yellow&style=flat-square" alt="contributors" style="height: 20px;">
   </a>
   <a href="https://opensource.org/licenses/Apache-2.0">
@@ -17,8 +17,8 @@
   <br>
 </h4>
 
-- [Source](https://github.com/amannocci/temply)
-- [Issues](https://github.com/amannocci/temply/issues)
+- [Source](https://github.com/techcode-io/temply)
+- [Issues](https://github.com/techcode-io/temply/issues)
 - [Contact](mailto:adrien.mannocci@gmail.com)
 
 ## :package: Prerequisites
@@ -50,7 +50,7 @@ The following steps will ensure your project is cloned properly.
 
 1. Clone repository:
    ```shell
-   git clone https://github.com/amannocci/temply
+   git clone https://github.com/techcode-io/temply
    cd temply
    ```
 2. Install dependencies and setup environment:
@@ -372,8 +372,8 @@ notifications about new versions, and give it a :star2: **GitHub Star**!
 
 You can also contribute by:
 
-- Sending a [Pull Request](https://github.com/amannocci/temply/pulls) with your awesome new features and bug fixed.
-- Be part of the community and help resolve [Issues](https://github.com/amannocci/temply/issues).
+- Sending a [Pull Request](https://github.com/techcode-io/temply/pulls) with your awesome new features and bug fixed.
+- Be part of the community and help resolve [Issues](https://github.com/techcode-io/temply/issues).
 
 ## 🧾 License
 

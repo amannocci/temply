@@ -21,9 +21,8 @@ class Constants:
     ENCODING_UTF_8: Final[str] = "utf-8"
     PYINSTALLER_SPEC_PATH: Final[Path] = Path("temply.spec")
     PYPROJECT_PATH: Final[Path] = Path("pyproject.toml")
-    PYRIGHTCONFIG_PATH: Final[Path] = Path("pyrightconfig.json")
     REGISTRY_URL: str = os.getenv("REGISTRY_URL", "local.dev")
-    TEMPLY_INIT_PATH: Final[Path] = Path("temply") / "__init__.py"
+    TEMPLY_INIT_PATH: Final[Path] = Path("src/temply") / "__init__.py"
 
 
 def fatal(msg: str, err: Exception | None = None) -> NoReturn:

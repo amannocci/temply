@@ -18,6 +18,13 @@ class Constants:
     DISTRIBUTIONS_TARBALL_MACOS_SPEC_PATH: Final[Path] = (
         DISTRIBUTIONS_TARBALL_PATH / "temply.macOS.spec"
     )
+    DISTRIBUTIONS_PACKAGES_PATH: Final[Path] = Path("distributions") / "packages"
+    DISTRIBUTIONS_NFPM_AMD64_PATH: Final[Path] = (
+        DISTRIBUTIONS_PACKAGES_PATH / "nfpm.amd64.yaml"
+    )
+    DISTRIBUTIONS_NFPM_ARM64_PATH: Final[Path] = (
+        DISTRIBUTIONS_PACKAGES_PATH / "nfpm.arm64.yaml"
+    )
     ENCODING_UTF_8: Final[str] = "utf-8"
     PYINSTALLER_SPEC_PATH: Final[Path] = Path("temply.spec")
     PYPROJECT_PATH: Final[Path] = Path("pyproject.toml")

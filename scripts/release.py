@@ -8,6 +8,24 @@ from sh import ErrorReturnCode
 from scripts.utils import Constants, detect_gh, detect_git, fatal, project_version
 
 
+def __update_file_version(file_path: Path, version: str, pattern: str) -> None:
+    try:
+        data = file_path.read_text()
+    except Exception as err:
+        fatal(f"The `{file_path.as_posix()}` can't be read", err)
+
+    replacement = (
+        f'version: "{version}"'
+        if pattern.startswith("version:")
+        else f'version = "{version}"'
+    )
+    data = re.sub(pattern, replacement, data, count=1)
+    try:
+        file_path.write_text(data)
+    except Exception as err:
+        fatal(f"The `{file_path.as_posix()}` file can't be written", err)
+
+
 def __set_version(version: str) -> None:
     # Update app version
     try:
@@ -18,16 +36,15 @@ def __set_version(version: str) -> None:
         )
 
     # Update project version
-    try:
-        data = Constants.PYPROJECT_PATH.read_text()
-    except Exception as err:
-        fatal(f"The `{Constants.PYPROJECT_PATH.as_posix()}` can't be read", err)
+    __update_file_version(Constants.PYPROJECT_PATH, version, r"version = \"(.+)\"")
 
-    data = re.sub(r"version = \"(.+)\"", f'version = "{version}"', data, count=1)
-    try:
-        Constants.PYPROJECT_PATH.write_text(data)
-    except Exception as err:
-        fatal(f"The `{Constants.PYPROJECT_PATH.as_posix()}` file can't be written", err)
+    # Update NFPM versions
+    __update_file_version(
+        Constants.DISTRIBUTIONS_NFPM_AMD64_PATH, version, r"version: \"(.+)\""
+    )
+    __update_file_version(
+        Constants.DISTRIBUTIONS_NFPM_ARM64_PATH, version, r"version: \"(.+)\""
+    )
 
 
 def pre() -> None:
@@ -92,7 +109,6 @@ def run() -> None:
         f"--title=temply v{release_version}",
         release_version,
     ]
-    gh = detect_gh()
     binaries = [
         file.absolute().as_posix()
         for file in Path("dist").glob("./temply*")

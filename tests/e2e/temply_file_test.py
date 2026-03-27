@@ -3,7 +3,7 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from temply.cli import main
-from tests import PROJECT_TESTS_FIXTURES_DIR
+from tests.conftest import PROJECT_TESTS_FIXTURES_DIR
 
 
 def test_wrong_file_template(runner: CliRunner) -> None:

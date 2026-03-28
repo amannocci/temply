@@ -73,7 +73,7 @@ temply/
 ### Setup
 ```bash
 # Clone and install
-git clone https://github.com/amannocci/temply
+git clone https://github.com/techcode-io/temply
 cd temply
 uv sync                    # Install dependencies and set up environment
 uv run poe env:configure   # Configure environment

@@ -386,7 +386,7 @@ wheels = [
 
 [[package]]
 name = "temply"
-version = "0.7.5.dev0"
+version = "0.8.1.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

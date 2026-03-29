@@ -1,6 +1,6 @@
 [project]
 name = "temply"
-version = "0.8.1-dev"
+version = "0.8.1"
 description = "Render jinja2 templates on the command line with shell environment variables."
 authors = [
     { name = "Adrien Mannocci", email = "adrien.mannocci@gmail.com" }

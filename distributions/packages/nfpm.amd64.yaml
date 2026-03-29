@@ -1,6 +1,6 @@
 name: "temply"
 arch: "amd64"
-version: "0.7.5-dev"
+version: "0.8.1"
 section: "default"
 priority: "extra"
 maintainer: "Adrien Mannocci <adrien.mannocci@gmail.com>"

@@ -28,16 +28,16 @@ Tracker = "https://github.com/techcode-io/temply/issues"
 temply = "temply.cli:main"
 
 [build-system]
-requires = ["uv_build>=0.12.24,<0.13.0"]
+requires = ["uv_build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "poethepoet>=0.48.0", # MIT
-    "pre-commit>=4.6.2", # MIT
+    "poethepoet>=0.49.0", # MIT
+    "pre-commit>=4.7.0", # MIT
     "pyinstaller>=6.22.3", # GPL-2.0: https://pyinstaller.org/en/stable/license.html
     "pytest>=9.1.1", # MIT
-    "ruff>=0.16.10", # MIT
+    "ruff>=0.17.1", # MIT
     "sh>=2.4.0", # MIT
 ]
 

@@ -5,11 +5,11 @@
 </p>
 
 <h4 align="center">
-  <a href="[https://github.com/techcode-io/temply/actions/workflows/ci.yml](https://github.com/techcode-io/temply/actions/workflows/ci.yml)">
-    <img src="https://img.shields.io/github/actions/workflow/status/amannocci/temply/ci.yml?branch=main&label=ci&style=flat-square" alt="continuous integration" style="height: 20px;">
+  <a href="https://github.com/techcode-io/temply/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/techcode-io/temply/ci.yml?branch=main&label=ci&style=flat-square" alt="continuous integration" style="height: 20px;">
   </a>
   <a href="https://github.com/techcode-io/temply/graphs/contributors">
-    <img src="https://img.shields.io/github/contributors-anon/amannocci/temply?color=yellow&style=flat-square" alt="contributors" style="height: 20px;">
+    <img src="https://img.shields.io/github/contributors-anon/techcode-io/temply?color=yellow&style=flat-square" alt="contributors" style="height: 20px;">
   </a>
   <a href="https://opensource.org/licenses/Apache-2.0">
     <img src="https://img.shields.io/badge/apache%202.0-blue.svg?style=flat-square&label=license" alt="license" style="height: 20px;">
@@ -25,15 +25,17 @@
 ## :package: Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) for build system.
-- [Podman](https://podman.io/docs) for container packaging.
+- [Docker](https://docs.docker.com/) or [Podman](https://podman.io/docs) for `deb`/`rpm` packaging (Linux only).
 
 ## :sparkles: Features
 
 - Render jinja2 template using command line without python environment.
 - Standalone executable with jinja2 templating engine.
-- Support inclusion template rendering.
-- Command line fully compatible with [envtpl](https://github.com/andreasjansson/envtpl).
-- Support loading from environment variables.
+- Support inclusion template rendering, from files and stdin.
+- Command line compatible with [envtpl](https://github.com/andreasjansson/envtpl).
+- Load variables from environment, [envdir](#how-to-render-a-configuration-with-an-envdir),
+  [dotenv](#how-to-render-a-configuration-with-a-dotenv-file) and [json](#how-to-render-a-configuration-with-a-json-file) files.
+- Parse and serialize JSON and YAML values with [filters](#filters).
 
 ## :dart: Motivation
 
@@ -83,7 +85,9 @@ uv run poe fmt
 uv run poe build
 ```
 
-- It will compile project code with the current environment.
+- It will compile project code with the current environment into `dist/temply`.
+- It will also create a `dist/temply-<version>-<os>-<arch>.tar.gz` tarball.
+- On Linux, `uv run poe package:deb` and `uv run poe package:rpm` build packages from `dist/temply`.
 
 ### Test
 
@@ -96,17 +100,60 @@ uv run poe test
 
 ## 📖 Usage
 
+> [!WARNING]
+> By default, temply **deletes the template file** after a successful rendering.
+> Use `--keep-template` to keep it.
+
+```text
+Usage: temply [OPTIONS] [INPUT_FILE]
+
+Options:
+  --allow-missing         Allow missing variables.
+  --keep-template         Keep original template file (it is deleted after
+                          rendering by default).
+  --envdir DIRECTORY      Load environment variables from directory
+  --dotenv FILE           Load environment variables from dotenv file
+  --json-file FILE        Load environment variables from json file
+  -o, --output-file FILE  Output file path.
+  --version               Show the version and exit.
+  --help                  Show this message and exit.
+```
+
 ### How it works
 
 - We use `PyInstaller` to create a standalone executable.
-- This means you don't need python runtime to run it.
-- This means also that we have a dependency with `glibc` version.
-- To be compatible with a wide range of linux, we build the project using an old `glibc` version.
-- If the project don't run, you will have to re-build it using your distribution.
-- When the project start, it will look at the template, found the directory of the template and then configure jinja2
-  the filesystem.
-- It will then attempt to render the template and create a file or display on stdout.
+- This means you don't need a python runtime to run it.
+- This also means it depends on the `glibc` version.
+- To be compatible with a wide range of linux distributions, we build the project using an old `glibc` version.
+- If the binary doesn't run, you will have to rebuild it on your distribution.
+- When temply starts, it reads the template from `INPUT_FILE` (or stdin when omitted) and configures jinja2 to load
+  included templates from the template directory (or the current directory for stdin).
+- It then renders the template and writes the result to the output file, or to stdout.
+- The output is written as is: temply doesn't add a trailing newline.
+- If rendering fails (undefined variable, syntax error, invalid value), temply exits with code `1`, prints an error and
+  leaves the template untouched.
 - You can use any [jinja2](https://jinja.palletsprojects.com/en/3.1.x/templates/) syntax.
+
+### Data sources
+
+- Variables are loaded from the following sources, each one overriding the previous ones:
+  1. Environment variables.
+  2. `--envdir` directory.
+  3. `--dotenv` file.
+  4. `--json-file` file.
+- This order is fixed and doesn't depend on the order of the options on the command line.
+
+### Filters
+
+| Filter                  | Description                                                                        |
+|-------------------------|------------------------------------------------------------------------------------|
+| `from_json`, `fromjson` | Parse a JSON string.                                                               |
+| `to_json`, `tojson`     | Serialize a value to JSON. Replaces the jinja2 built-in `tojson` (no HTML escape). |
+| `from_yaml`, `fromyaml` | Parse a YAML string.                                                               |
+| `to_yaml`, `toyaml`     | Serialize a value to YAML.                                                         |
+
+- The `environment(prefix)` function returns the `(key, value)` pairs of all variables starting with `prefix`, sorted
+  by key and with the prefix removed.
 
 ### How to render a simple configuration
 
@@ -145,8 +192,9 @@ echo 'Hello {{ name }} !' | name=world temply -o /path/to/template.txt
 
 ```text
 Hello world !
-
 ```
+
+- Templates read from stdin can include templates relative to the current directory.
 
 ### How to render an advanced configuration
 
@@ -165,7 +213,7 @@ foobar="Hello world !"
 - Then launch the command below to render.
 
 ```bash
-temply -o /path/to/template.yml /path/to/template.yml.tpl
+temply --keep-template -o /path/to/template.yml /path/to/template.yml.tpl
 ```
 
 - It will create a file `/path/to/template.yml` with the following content.
@@ -174,8 +222,9 @@ temply -o /path/to/template.yml /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
-### How to render a configuration with missing environment variables.
+### How to render a configuration with missing environment variables
 
+- By default, an undefined variable is an error.
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
 ```text
@@ -194,7 +243,7 @@ temply --allow-missing -o /path/to/template.yml /path/to/template.yml.tpl
 missing_var = ''
 ```
 
-### How to render a configuration on stdout.
+### How to render a configuration on stdout
 
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -214,49 +263,54 @@ foobar='Hello world !' temply /path/to/template.yml.tpl
 foobar="Hello world !"
 ```
 
-### How to render a configuration with a json environment variable.
+### How to render a configuration with a json environment variable
 
 - Create a file where you want `/path/to/template.json.tpl` with the following content.
 
 ```text
-{{ json_var | fromjson }}
-# Or {{ json_var | from_json }}
+first = {{ (json_var | from_json)[0] }}
+all = {{ json_var | from_json | to_json }}
 ```
 
 - Then launch the command below to render.
 
 ```bash
-json_var='["string"]' temply /path/to/template.json.tpl
+json_var='["string", 42]' temply /path/to/template.json.tpl
 ```
 
 - It will output on stdout the following content.
 
-```json
-["string"]
+```text
+first = string
+all = ["string", 42]
 ```
 
-### How to render a configuration with a yaml environment variable.
+### How to render a configuration with a yaml environment variable
 
 - Create a file where you want `/path/to/template.yaml.tpl` with the following content.
 
 ```text
-{{ (yaml_var | fromyaml).foo }}
-# Or {{ (yaml_var | from_yaml).foo }}
+foo = {{ (yaml_var | from_yaml).foo }}
+{{ yaml_var | from_yaml | to_yaml }}
 ```
 
 - Then launch the command below to render.
 
 ```bash
-yaml_var='foo: bar' temply /path/to/template.yaml.tpl
+yaml_var='{foo: bar, list: [1, 2]}' temply /path/to/template.yaml.tpl
 ```
 
 - It will output on stdout the following content.
 
-```text
-bar
+```yaml
+foo = bar
+foo: bar
+list:
+- 1
+- 2
 ```
 
-### How to render a configuration with a wildcard environment variable.
+### How to render a configuration with a wildcard environment variable
 
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
@@ -279,8 +333,12 @@ BAR = bar
 FOO = foo
 ```
 
-### How to render a configuration with an envdir.
+### How to render a configuration with an envdir
 
+- An envdir is a directory where each file defines a variable: the file name is the key and its content the value.
+- Trailing spaces, tabs and newlines are removed from the value, and `NUL` characters are replaced by newlines.
+- An empty file unsets the variable, even if it's defined in the environment.
+- Hidden files and subdirectories are ignored.
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
 ```text
@@ -297,18 +355,28 @@ temply --envdir /path/to/envdir /path/to/template.yml.tpl
 - It will output on stdout the following content.
 
 ```yaml
-foobar = foobar
+foobar="foobar"
 ```
 
-### How to render a configuration with a dotenv file.
+### How to render a configuration with a dotenv file
 
+- A dotenv file contains one `KEY=VALUE` per line.
+- Blank lines and lines starting with `#` are ignored, and an optional `export ` prefix is allowed.
+- Spaces around the key and the value are removed, as well as matching single or double quotes around the value.
+- Escape sequences, variable interpolation and multiline values aren't supported.
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
 ```text
 foobar="{{ FOOBAR }}"
 ```
 
-- Then create a dotenv file named `dotenv` with `FOOBAR=foobar` as content.
+- Then create a dotenv file named `dotenv` with the following content.
+
+```shell
+# Comments are allowed
+export FOOBAR="foobar"
+```
+
 - Then launch the command below to render.
 
 ```bash
@@ -318,11 +386,13 @@ temply --dotenv /path/to/dotenv /path/to/template.yml.tpl
 - It will output on stdout the following content.
 
 ```yaml
-foobar = foobar
+foobar="foobar"
 ```
 
-### How to render a configuration with a json file.
+### How to render a configuration with a json file
 
+- A json file is either an object or a list of `{"key": ..., "value": ...}` objects.
+- Values keep their JSON type (string, number, list, object), and a `null` value unsets the variable.
 - Create a file where you want `/path/to/template.yml.tpl` with the following content.
 
 ```text
@@ -331,6 +401,15 @@ bar="{{ BAR }}"
 ```
 
 - Then create a json file named `file.json` with the following content.
+
+```json
+{
+  "FOO": "foo",
+  "BAR": "bar"
+}
+```
+
+- Or with the following content.
 
 ```json
 [
@@ -358,10 +437,11 @@ foo="foo"
 bar="bar"
 ```
 
-### How to render a configuration and keep template after rendering.
+### How to render a configuration and keep template after rendering
 
-- By default, temply will remove template file.
-- If you want to keep template you will have to use the flag `--keep-template`.
+- By default, temply removes the template file after rendering it.
+- If you want to keep the template, use the flag `--keep-template`.
+- The template is never removed when reading it from stdin or when rendering fails.
 
 ## :heart: Contributing
 

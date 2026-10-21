@@ -10,6 +10,7 @@ readme = "README.md"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.12,<3.14"
 dependencies = [
@@ -21,7 +22,7 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/techcode-io/temply"
 Documentation = "https://github.com/techcode-io/temply"
-Changelog = "https://github.com/techcode-io/temply/CHANGELOG.md"
+Changelog = "https://github.com/techcode-io/temply/releases"
 Tracker = "https://github.com/techcode-io/temply/issues"
 
 [project.scripts]
@@ -115,6 +116,10 @@ script = "scripts.release:run"
 [tool.poe.tasks."release:post"]
 help = "Prepare next iteration."
 script = "scripts.release:post"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*_test.py"]
 
 [tool.ruff.lint]
 extend-select = ["TID252"]

@@ -4,239 +4,133 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Temply** is a standalone command-line tool that renders Jinja2 templates without requiring a Python runtime. It's delivered as a compiled binary (via PyInstaller) that can run independently in containerized environments.
+**Temply** is a command-line tool that renders Jinja2 templates with variables from the environment and files.
+It's shipped as a standalone binary built with PyInstaller, so it runs without a Python runtime (e.g. in containers).
 
-Key characteristics:
-- **Purpose**: Template rendering with environment variable injection
-- **Delivery**: Standalone executables for Linux and macOS (compiled with PyInstaller)
-- **CLI Interface**: Click-based command-line application
-- **Templating Engine**: Jinja2
-- **Data Sources**: Environment variables, files (.env, .envdir, JSON), stdin
+- **CLI**: Click
+- **Templating**: Jinja2
+- **Data sources**: environment variables, envdir directory, dotenv file, JSON file
+- **Delivery**: tarballs for Linux and macOS (amd64, arm64), `deb` and `rpm` packages for Linux
+- **Python**: see `requires-python` in `pyproject.toml`
 - **License**: Apache-2.0
-- **Python Version**: 3.12+
 
-## Architecture & Structure
+Versions and dependency ranges live in `pyproject.toml` and `src/temply/__init__.py`; don't duplicate them here.
 
-### Directory Layout
+## Directory Layout
+
 ```
 temply/
-├── src/temply/              # Main package (src-layout convention)
-│   ├── cli.py              # Click command-line interface
-│   ├── loaders.py          # Data loaders (env, files, JSON, YAML)
-│   ├── filters.py          # Jinja2 custom filters
-│   └── __init__.py         # Version info
-├── tests/e2e/              # End-to-end tests (pytest)
-├── scripts/                # Build and release automation scripts
-├── distributions/          # PyInstaller spec files for Linux/macOS
-└── bin/                    # Development entry point
+├── src/temply/                  # Package (src-layout, built with uv_build)
+│   ├── __init__.py             # __version__
+│   ├── cli.py                  # Click command: options, Jinja2 environment, rendering
+│   ├── loaders.py              # Data loaders (env, envdir, dotenv, json)
+│   ├── filters.py              # Jinja2 filters and the environment() global
+│   └── io.py                   # Atomic file write helper
+├── tests/
+│   ├── conftest.py             # PROJECT_ROOT_DIR, PROJECT_TESTS_FIXTURES_DIR
+│   ├── e2e/conftest.py         # runner, clean_env (autouse), fixtures (tmp copy)
+│   ├── e2e/*_test.py           # End-to-end tests through Click's CliRunner
+│   └── fixtures/               # Template, envdir, dotenv and json fixtures
+├── scripts/                    # Build, package and release automation (poe tasks)
+├── distributions/
+│   ├── tarball/temply.spec     # PyInstaller spec (all platforms)
+│   └── packages/nfpm.yaml      # nfpm config, ARCH/VERSION from env vars
+├── bin/temply                  # PyInstaller entry point
+└── .github/workflows/          # CI, pre-release and release workflows
 ```
 
-### Core Components
+## Core Behaviour
 
-1. **CLI Module** (`src/temply/cli.py`)
-   - Entry point for the command-line application
-   - Handles options: `--allow-missing`, `--keep-template`, `--envdir`, `--dotenv`, `--json-file`, `-o/--output-file`
-   - Stdin support for template input
-   - File input/output handling
+### CLI (`src/temply/cli.py`)
 
-2. **Loaders** (`src/temply/loaders.py`)
-   - Abstract `Loader` base class with `load()` method returning dict
-   - `ChainLoader`: Composites multiple loaders
-   - `EnvLoader`: Loads from environment variables
-   - `EnvdirLoader`: Loads from directory of env files
-   - `DotenvLoader`: Loads from .env files
-   - `JsonFileLoader`: Loads from JSON files
-   - Data merging: Later loaders override earlier ones
+1. Read the template from `INPUT_FILE`, or from stdin when omitted.
+   - File: `FileSystemLoader` on the template's directory.
+   - Stdin: `DictLoader` for the template, then `FileSystemLoader` on the current directory for includes.
+2. Build the Jinja2 `Environment` (`StrictUndefined` unless `--allow-missing`, `trim_blocks`, `lstrip_blocks`,
+   `keep_trailing_newline`) and register filters and the `environment` global.
+3. Load variables with a `ChainLoader`.
+4. Render. Jinja2, `ValueError`, `TypeError` and YAML errors become a `click.ClickException` (exit 1, no traceback).
+5. Write the output: atomically to `-o` via `temply.io.write_atomically`, or to stdout with `nl=False`.
+6. Only then delete the template, unless `--keep-template` is set (the default deletes it).
 
-3. **Filters** (`src/temply/filters.py`)
-   - Custom Jinja2 filters for template processing
-   - Functions: `from_json()`, `to_json()`, `from_yaml()`, `to_yaml()`, `get_environment()`
+### Loaders (`src/temply/loaders.py`)
 
-### Build & Release Pipeline
+- `ChainLoader` merges loaders in order; later loaders override earlier ones.
+  A `None` value unsets the key from what earlier loaders produced.
+- Precedence is fixed, whatever the option order: `EnvLoader` < `EnvdirLoader` < `DotenvLoader` < `JsonFileLoader`.
+- All files are read as `utf-8-sig` (a leading BOM is dropped). Read and parse errors raise `click.FileError`.
+- `EnvdirLoader`: one file per variable, top level only, hidden files and names with `=` skipped.
+  The value is right-stripped of spaces, tabs and newlines, and `NUL` becomes a newline. An empty file unsets the variable.
+- `DotenvLoader`: `KEY=VALUE` lines; blank lines, `#` comments and an `export ` prefix are allowed; spaces around key
+  and value are stripped, and so are matching quotes. No escapes, interpolation or multiline values.
+  A line without `=` raises an error with its line number.
+- `JsonFileLoader`: a JSON object, or a list of `{"key": ..., "value": ...}` objects. Values keep their JSON type.
 
-**Build Process** (`scripts/build.py`):
-- Uses PyInstaller to create standalone binaries
-- Generates separate specs for Linux and macOS
-- Creates distributable tarballs with version info
+### Filters (`src/temply/filters.py`)
 
-**Release Process** (`scripts/release.py`):
-- Updates version numbers
-- Creates GitHub releases with artifacts
-- Manages release notes
-
-**Distribution Scripts** (`scripts/package.py`):
-- Debian package generation (.deb) on Linux
-- RPM package generation (.rpm) on Linux
+- `from_json`/`fromjson`, `to_json`/`tojson` (replaces Jinja2's built-in `tojson`; no HTML escaping, unicode kept).
+- `from_yaml`/`fromyaml` (`safe_load`), `to_yaml`/`toyaml` (`safe_dump`, unicode kept, no `...` end marker).
+- `environment(prefix="")` global: sorted `(key, value)` pairs of non-callable context entries starting with `prefix`,
+  with the prefix removed.
 
 ## Development Commands
 
-### Setup
 ```bash
-# Clone and install
-git clone https://github.com/techcode-io/temply
-cd temply
-uv sync                    # Install dependencies and set up environment
-uv run poe env:configure   # Configure environment
-```
-
-### Common Tasks
-```bash
-uv run poe lint            # Run ruff linter on src/temply
-uv run poe fmt             # Format with ruff (imports + formatting)
-uv run poe test            # Run all pytest tests (19 total)
-uv run poe build           # Build standalone binary
+uv sync                    # Install dependencies
+uv run poe env:configure   # Install pre-commit hooks
+uv run poe fmt             # Sort imports and format (ruff)
+uv run poe lint            # ruff check src tests scripts + ruff format --check
+uv run poe test            # pytest
+uv run poe build           # PyInstaller bundle in dist/temply + dist/temply-<version>-<os>-<arch>.tar.gz
+uv run poe package:deb     # Linux only, nfpm in a docker/podman container
+uv run poe package:rpm     # Linux only, nfpm in a docker/podman container
 uv run poe project:upgrade # Upgrade dependencies and pre-commit hooks
 ```
 
-### Running Specific Tests
+Running specific tests:
+
 ```bash
-# Single test file
 uv run pytest tests/e2e/temply_file_test.py -v
-
-# Single test
-uv run pytest tests/e2e/temply_file_test.py::test_simple_template -v
-
-# With output
-uv run pytest tests/e2e/ -v -s
+uv run pytest tests -k dotenv -v
 ```
 
-### Direct Usage
-```bash
-# Use the CLI directly (after uv sync)
-temply --version
-temply template.j2 -o output.txt
-echo "Hello {{ name }}" | temply
-```
+Release tasks (`release:pre`, `release`, `release:post`) are meant to run from the GitHub workflows, see below.
 
-## Build System & Dependencies
+## Code Conventions
 
-**Build Backend**: `uv_build>=0.10.0,<0.12.0`
-- Modern Python build standard
-- No hatch-specific configuration needed
-- Automatically discovers package in `src/temply`
-
-**Runtime Dependencies**:
-- `click>=8.1.7` - CLI framework
-- `jinja2>=3.1.4` - Template engine
-- `PyYAML>=6.0.2` - YAML support
-
-**Dev Dependencies** (via uv):
-- `poethepoet` - Task runner (poe)
-- `pyinstaller` - Binary compilation
-- `pytest` - Testing framework
-- `ruff` - Linter & formatter
-- `sh` - Shell command execution (for scripts)
-
-**Tool Integration**:
-- Task runner: Poe (defined in `pyproject.toml` under `[tool.poe.tasks]`)
-- Linter: Ruff (checks `src/` directory)
-- Type checking: Pyright (configured in `pyproject.toml`)
-- Pre-commit hooks: Enforces linting and formatting before commits
-- Pytest: Configured with `pythonpath = ["."]` for import resolution
+- Use absolute package imports (`from temply.loaders import ...`); relative imports are banned by ruff (`TID252`).
+- Ruff uses its default rules plus `TID252` (see `[tool.ruff.lint]` in `pyproject.toml`).
+- Type hints on public functions; `Loader.load()` returns `dict[str, Any]`.
+- Pre-commit runs ruff check, ruff format, LF line endings and gitlint. Commit titles must start with
+  `build|ci|docs|feat|fix|perf|refactor|test|chore|release` and stay within 80 characters (see `.gitlint`).
 
 ## Testing
 
-**Test Framework**: pytest with Click's CliRunner for CLI testing
+- Tests are end-to-end through Click's `CliRunner`. Test files are named `*_test.py`.
+- The autouse `clean_env` fixture removes test variables (`MY_*`, `simple`, `name`, ...) from the host environment.
+  Add new variable names there if a test relies on them being unset.
+- Use the `fixtures` fixture (a copy of `tests/fixtures` in `tmp_path`) and `tmp_path` for outputs.
+  Never render tracked fixtures in place or write to `/tmp`.
+- `render(runner, template, *args, env=...)` in `temply_file_test.py` passes `--keep-template` for you.
 
-**Test Structure**:
-- `tests/__init__.py` - Defines `PROJECT_TESTS_FIXTURES_DIR` and `PROJECT_ROOT_DIR`
-- `tests/e2e/temply_file_test.py` - File-based template tests (14 tests)
-- `tests/e2e/temply_stdin_test.py` - Stdin-based template tests (5 tests)
-- `tests/fixtures/` - Template fixture files used by tests
+## Build & Release
 
-**Test Patterns**:
-```python
-# CLI tests use CliRunner from Click
-def test_example(runner: CliRunner) -> None:
-    result = runner.invoke(main, args=["template.tpl", "-o", "output"])
-    assert result.exit_code == 0
-```
+- **Build** (`scripts/build.py`): runs PyInstaller on `distributions/tarball/temply.spec`, checks `--version`, then
+  creates the tarball. Linux binaries are built on an old Ubuntu runner for `glibc` compatibility.
+- **Package** (`scripts/package.py`): runs a pinned `goreleaser/nfpm` image with `ARCH` and `VERSION` env vars.
+- **Version format**: `X.Y.Z` for releases, `X.Y.Z-dev` between releases. `scripts.utils.project_version()` reads it
+  from `pyproject.toml`. Tags have no `v` prefix (e.g. `0.8.2`).
+- **Release flow** (GitHub workflows, `main` only):
+  1. *Pre release* (`release:pre`): bumps `pyproject.toml`, `src/temply/__init__.py` and `uv.lock` to `X.Y.Z` and
+     opens a PR.
+  2. *Release* (`release`): after CI, tags and publishes a GitHub release with tarballs and packages. It refuses
+     `-dev` versions.
+  3. *Post release* (`release:post`): bumps to the next `X.Y.Z-dev` and opens a PR.
+- CI (`.github/workflows/ci.yml`): lint, build on 4 targets, test, package deb/rpm, and install checks for tarballs
+  and debs.
 
-**Running Tests**:
-```bash
-uv run poe test           # All tests
-uv run pytest tests -v    # Verbose output
-uv run pytest tests -k "simple"  # Filter by name
-```
+## Sandbox Notes
 
-## Key Development Patterns
-
-### Entry Point
-- CLI entry point defined in `pyproject.toml`: `temply = "temply.cli:main"`
-- The `main()` function is a Click command that orchestrates loaders and Jinja2 rendering
-
-### Data Flow
-1. Parse CLI arguments (input file, output file, flags)
-2. Build `ChainLoader` with appropriate loaders based on options
-3. Load environment context from loaders
-4. Create Jinja2 `Environment` with custom filters
-5. Render template with context
-6. Write output (file or stdout)
-
-### Loader Composition
-- Use `ChainLoader([env_loader, dotenv_loader, json_loader])` to merge data sources
-- Later loaders override earlier ones
-- All loaders return dicts that get merged
-
-## Recent Changes (March 2027)
-
-### Src-Layout Refactoring
-- **Changed**: Moved package from root `temply/` to `src/temply/`
-- **Reason**: Modern Python packaging convention with better namespace isolation
-- **Files Modified**:
-  - Moved 4 files: `__init__.py`, `cli.py`, `filters.py`, `loaders.py`
-  - Updated `scripts/utils.py` - `TEMPLY_INIT_PATH` now points to `src/temply`
-  - Updated `pyproject.toml` - pyright, ruff paths updated to `src/`
-
-### Build System Migration
-- **Changed**: From `hatchling` to `uv_build` backend
-- **Reason**: Simpler, uv-native, removes hatch-specific configuration
-- **Configuration**: Removed `[tool.hatch.*]` sections; uv_build auto-discovers packages
-- **Version Constraint**: `uv_build>=0.10.0,<0.12.0` for reproducible builds
-
-### Impact
-- All 19 tests pass with new structure
-- CLI functionality unchanged
-- Development workflow unchanged (still use `uv sync` and `poe` tasks)
-- Package building works seamlessly with PyInstaller
-
-## Workflow Tips
-
-### Before Committing
-1. `uv run poe fmt` - Format code
-2. `uv run poe lint` - Check for issues
-3. `uv run poe test` - Verify tests pass
-4. Pre-commit hooks will validate automatically on git commit
-
-### Adding New Features
-1. Add code to `src/temply/` (appropriate module)
-2. Add/update tests in `tests/e2e/`
-3. Consider adding custom Jinja2 filters if template-related
-4. Test with: `uv run poe test` and manual `temply --help` checks
-
-### Debugging
-- Use `temply --version` to verify CLI works
-- Use `echo "template" | temply` for stdin testing
-- Add print statements and run via `uv run pytest -s` for detailed output
-- Check `pytest` output for test fixture paths
-
-## Entry Points & Commands
-
-**CLI Entry Point**: `temply` (defined as `temply.cli:main` in pyproject.toml)
-
-**Version**: `0.7.5-dev` (defined in `src/temply/__init__.py`)
-
-**Poe Task Aliases**:
-- `env:configure` - Setup environment
-- `env:wipe` - Clean build artifacts
-- `project:upgrade` - Update dependencies
-- `generate` - Generate config files
-- `lint` - Run ruff checks
-- `fmt` - Format code
-- `build` - Compile binary
-- `test` - Run tests
-- `package:deb` - Build Debian package (Linux only)
-- `package:rpm` - Build RPM package (Linux only)
-- `release:pre` - Create release PR
-- `release` - Create release
-- `release:post` - Prepare next iteration
+- `uv run` and the venv's Python live under `~/.cache/uv` and `~/.local/share/uv`, which the Claude Code sandbox blocks.
+  Run `.venv/bin/poe`, `.venv/bin/pytest` or `.venv/bin/ruff` outside the sandbox, or adjust it with `/sandbox`.
+- Git commits run the pre-commit hooks, which need the same access.

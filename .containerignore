@@ -1,7 +1,0 @@
-*.egg-info
-*.pyc
-.vscode
-.venv
-build
-dist
-.idea

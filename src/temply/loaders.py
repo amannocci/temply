@@ -2,6 +2,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -10,11 +11,12 @@ class Loader(ABC):
     """Abstract loader"""
 
     @abstractmethod
-    def load(self) -> dict:
+    def load(self) -> dict[str, Any]:
         """
         Load from data source.
+        A `None` value means the key must be unset from previously loaded values.
         """
-        return {}
+        ...
 
 
 class ChainLoader(Loader):
@@ -24,21 +26,22 @@ class ChainLoader(Loader):
         """Init chain loader."""
         self.__loaders = loaders
 
-    def load(self) -> dict:
-        ctx = {}
+    def load(self) -> dict[str, Any]:
+        ctx: dict[str, Any] = {}
         for loader in self.__loaders:
-            ctx = {**ctx, **loader.load()}
+            for key, value in loader.load().items():
+                if value is None:
+                    ctx.pop(key, None)
+                else:
+                    ctx[key] = value
         return ctx
 
 
 class EnvLoader(Loader):
     """Environment loader implementation"""
 
-    def load(self) -> dict:
-        ctx = {}
-        for key, value in os.environ.items():
-            ctx[key] = value
-        return ctx
+    def load(self) -> dict[str, Any]:
+        return dict(os.environ)
 
 
 class EnvdirLoader(Loader):
@@ -48,18 +51,19 @@ class EnvdirLoader(Loader):
         """Init envdir loader."""
         self.__path = path
 
-    def load(self) -> dict:
-        ctx = {}
-        for root, _, files in os.walk(self.__path.as_posix(), followlinks=False):
-            for file in files:
-                with open(
-                    os.path.join(root, file), "r", encoding="utf-8"
-                ) as file_descriptor:
-                    value = file_descriptor.read().strip("\n\t ").replace("\x00", "\n")
-                    if len(value) > 0:
-                        ctx[file] = value
-                    else:
-                        del ctx[file]
+    def load(self) -> dict[str, Any]:
+        ctx: dict[str, Any] = {}
+        for file in self.__path.iterdir():
+            if file.name.startswith(".") or "=" in file.name or not file.is_file():
+                continue
+            try:
+                value = file.read_text(encoding="utf-8-sig")
+            except (OSError, ValueError) as err:
+                raise click.FileError(str(file.absolute()), str(err)) from err
+
+            # An empty file means the variable must be unset
+            value = value.rstrip("\n\t ").replace("\x00", "\n")
+            ctx[file.name] = value if value else None
         return ctx
 
 
@@ -70,23 +74,27 @@ class DotenvLoader(Loader):
         """Init dotenv loader."""
         self.__path = path
 
-    def load(self) -> dict:
-        ctx = {}
-
-        # Check dotfile is a regular file
-        if not self.__path.is_file():
-            raise click.FileError(str(self.__path.absolute()), "Must be a regular file")
-
-        # Process
+    def load(self) -> dict[str, Any]:
         try:
-            value = self.__path.read_text(encoding="utf-8")
-            lines = value.splitlines()
-            for line in lines:
-                key, value = line.split("=", 1)
-                ctx[key] = value
-        except OSError as err:
-            raise click.FileError(str(self.__path.absolute()), str(err))
+            content = self.__path.read_text(encoding="utf-8-sig")
+        except (OSError, ValueError) as err:
+            raise click.FileError(str(self.__path.absolute()), str(err)) from err
 
+        ctx: dict[str, Any] = {}
+        for lineno, raw_line in enumerate(content.splitlines(), start=1):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            line = line.removeprefix("export ").lstrip()
+            key, sep, value = line.partition("=")
+            key, value = key.strip(), value.strip()
+            if not sep or not key:
+                raise click.FileError(
+                    str(self.__path.absolute()), f"line {lineno}: expected KEY=VALUE"
+                )
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            ctx[key] = value
         return ctx
 
 
@@ -97,20 +105,21 @@ class JsonFileLoader(Loader):
         """Init json file loader."""
         self.__path = path
 
-    def load(self) -> dict:
-        ctx = {}
-
-        # Check json file is a regular file
-        if not self.__path.is_file():
-            raise click.FileError(str(self.__path.absolute()), "Must be a regular file")
-
-        # Process
+    def load(self) -> dict[str, Any]:
         try:
-            values = json.loads(self.__path.read_text(encoding="utf-8"))
-            for val in values:
-                if val.get("key"):
-                    ctx[val.get("key")] = val.get("value")
-        except OSError as err:
-            raise click.FileError(str(self.__path.absolute()), str(err))
+            values = json.loads(self.__path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError) as err:
+            raise click.FileError(str(self.__path.absolute()), str(err)) from err
 
-        return ctx
+        # Plain object: {"KEY": "value"}
+        if isinstance(values, dict):
+            return values
+
+        # List of entries: [{"key": "KEY", "value": "value"}]
+        if isinstance(values, list) and all(isinstance(val, dict) for val in values):
+            return {val["key"]: val.get("value") for val in values if val.get("key")}
+
+        raise click.FileError(
+            str(self.__path.absolute()),
+            'Expected a JSON object or a list of {"key": ..., "value": ...} objects',
+        )

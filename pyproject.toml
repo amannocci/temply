@@ -65,13 +65,12 @@ sequence = [
     { cmd = "pre-commit autoupdate" },
 ]
 
-[tool.poe.tasks.generate]
-help = "Generate configuration files."
-script = "scripts.generate:run"
-
 [tool.poe.tasks.lint]
 help = "Lint code project."
-cmd = "ruff check src tests"
+sequence = [
+    { cmd = "ruff check src tests scripts" },
+    { cmd = "ruff format --check" },
+]
 
 [tool.poe.tasks.fmt]
 help = "Format code project."

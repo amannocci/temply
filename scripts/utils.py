@@ -1,6 +1,7 @@
 import os
-import re
+import platform
 import sys
+import tomllib
 from pathlib import Path
 from typing import Final, NoReturn
 
@@ -11,25 +12,12 @@ class Constants:
     """All constants"""
 
     DIST_PATH: Final[Path] = Path("dist")
-    DISTRIBUTIONS_TARBALL_PATH: Final[Path] = Path("distributions") / "tarball"
-    DISTRIBUTIONS_TARBALL_LINUX_SPEC_PATH: Final[Path] = (
-        DISTRIBUTIONS_TARBALL_PATH / "temply.linux.spec"
-    )
-    DISTRIBUTIONS_TARBALL_MACOS_SPEC_PATH: Final[Path] = (
-        DISTRIBUTIONS_TARBALL_PATH / "temply.macOS.spec"
-    )
-    DISTRIBUTIONS_PACKAGES_PATH: Final[Path] = Path("distributions") / "packages"
-    DISTRIBUTIONS_NFPM_AMD64_PATH: Final[Path] = (
-        DISTRIBUTIONS_PACKAGES_PATH / "nfpm.amd64.yaml"
-    )
-    DISTRIBUTIONS_NFPM_ARM64_PATH: Final[Path] = (
-        DISTRIBUTIONS_PACKAGES_PATH / "nfpm.arm64.yaml"
-    )
-    ENCODING_UTF_8: Final[str] = "utf-8"
-    PYINSTALLER_SPEC_PATH: Final[Path] = Path("temply.spec")
+    PYINSTALLER_SPEC_PATH: Final[Path] = Path("distributions/tarball/temply.spec")
+    NFPM_CONFIG_PATH: Final[Path] = Path("distributions/packages/nfpm.yaml")
     PYPROJECT_PATH: Final[Path] = Path("pyproject.toml")
-    REGISTRY_URL: str = os.getenv("REGISTRY_URL", "local.dev")
-    TEMPLY_INIT_PATH: Final[Path] = Path("src/temply") / "__init__.py"
+    TEMPLY_INIT_PATH: Final[Path] = Path("src/temply/__init__.py")
+    UV_LOCK_PATH: Final[Path] = Path("uv.lock")
+    SUPPORTED_ARCHS: Final[frozenset[str]] = frozenset({"amd64", "arm64"})
 
 
 def fatal(msg: str, err: Exception | None = None) -> NoReturn:
@@ -40,86 +28,59 @@ def fatal(msg: str, err: Exception | None = None) -> NoReturn:
     sys.exit(1)
 
 
-def detect_uv() -> Command:
+def require(name: str) -> Command:
     """
-    Try to detect uv.
+    Resolve a command or die.
+    Args:
+        name: command name.
+
     Returns:
-        a command if uv is detected.
+        the resolved command.
     """
     try:
-        return Command("uv")
+        return Command(name)
     except CommandNotFound:
-        fatal("`uv` isn't detected")
-
-
-def detect_gh() -> Command:
-    """
-    Try to detect gh.
-    Returns:
-        a command if gh is detected.
-    """
-    try:
-        return Command("gh")
-    except CommandNotFound:
-        fatal("`gh` isn't installed")
-
-
-def detect_git() -> Command:
-    """
-    Try to detect git.
-    Returns:
-        a command if git is detected.
-    """
-    try:
-        return Command("git")
-    except CommandNotFound:
-        fatal("`git` isn't installed")
-
-
-def detect_pyinstaller() -> Command:
-    """
-    Try to detect pyinstaller.
-    Returns:
-        a command if pyinstaller is detected.
-    """
-    try:
-        return Command("pyinstaller")
-    except CommandNotFound:
-        fatal("`pyinstaller` isn't installed")
+        fatal(f"`{name}` isn't installed")
 
 
 def project_version() -> str:
     """
     Returns:
-        current project version.
+        current project version (e.g. `1.2.3` or `1.2.4-dev`).
     """
-    uv = detect_uv()
-    details = uv("pip", "show", "temply", _err=sys.stderr)
-    version = re.search(r"Version: (.*)", details).group(1)
-    return version.replace(".dev0", "-dev").strip()
+    try:
+        with Constants.PYPROJECT_PATH.open("rb") as pyproject:
+            return tomllib.load(pyproject)["project"]["version"]
+    except (OSError, tomllib.TOMLDecodeError, KeyError) as err:
+        fatal(f"Unable to read version from `{Constants.PYPROJECT_PATH}`", err)
 
 
-def container_backend() -> tuple[Command, dict[str, str]]:
+def normalized_arch() -> str:
     """
-    Try to detect a container backend.
-    Either podman or docker.
+    Returns:
+        current machine architecture using debian naming (amd64, arm64).
+    """
+    arch = platform.machine().lower()
+    arch = {"x86_64": "amd64", "aarch64": "arm64"}.get(arch, arch)
+    if arch not in Constants.SUPPORTED_ARCHS:
+        fatal(f"Unsupported architecture `{arch}`")
+    return arch
+
+
+def container_backend() -> tuple[str, Command, dict[str, str]]:
+    """
+    Detect a container backend, either docker or podman.
 
     Returns:
-        a command if a backend is detected.
-    Raises:
-        CommandNotFound: if a suitable backend can't be found.
+        the backend name, its command and the environment to use.
     """
-    cmd = None
     env = os.environ.copy()
-    for backend in ["docker", "podman"]:
+    for backend in ("docker", "podman"):
         try:
             cmd = Command(backend)
         except CommandNotFound:
             continue
-        if "podman" == backend:
+        if backend == "podman":
             env["BUILDAH_FORMAT"] = "docker"
-        break
-
-    if not cmd:
-        raise CommandNotFound("Unable to find a suitable backend: docker or podman")
-    return cmd, env
+        return backend, cmd, env
+    fatal("Unable to find a suitable container backend: docker or podman")

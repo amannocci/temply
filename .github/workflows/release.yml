@@ -11,18 +11,31 @@ on:
 permissions:
   contents: read
 
-env:
-  # Ref: https://docs.astral.sh/uv/concepts/projects/sync/#checking-if-the-lockfile-is-up-to-date
-  UV_FROZEN: "true"
-
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate inputs
+        env:
+          NEXT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
+            echo "::error::Releases must be created from the main branch, got ${GITHUB_REF}"
+            exit 1
+          fi
+          if [[ ! "${NEXT_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-dev$ ]]; then
+            echo "::error::The next iteration version must match 1.2.3-dev, got ${NEXT_VERSION}"
+            exit 1
+          fi
+
   ci:
+    needs:
+      - validate
     permissions:
       contents: read
-      id-token: write
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 

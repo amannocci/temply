@@ -5,79 +5,77 @@ from pathlib import Path
 
 from sh import ErrorReturnCode
 
-from scripts.utils import Constants, detect_gh, detect_git, fatal, project_version
+from scripts.utils import Constants, fatal, project_version, require
+
+RELEASE_VERSION_PATTERN = r"\d+\.\d+\.\d+"
+NEXT_VERSION_PATTERN = r"\d+\.\d+\.\d+-dev"
 
 
-def __update_file_version(file_path: Path, version: str, pattern: str) -> None:
+def __update_file_version(file_path: Path, version: str) -> None:
     try:
-        data = file_path.read_text()
-    except Exception as err:
-        fatal(f"The `{file_path.as_posix()}` can't be read", err)
+        data = file_path.read_text(encoding="utf-8")
+    except OSError as err:
+        fatal(f"The `{file_path.as_posix()}` file can't be read", err)
 
-    replacement = (
-        f'version: "{version}"'
-        if pattern.startswith("version:")
-        else f'version = "{version}"'
+    data, count = re.subn(
+        r'^(version\s*=\s*)"[^"]*"',
+        rf'\g<1>"{version}"',
+        data,
+        count=1,
+        flags=re.MULTILINE,
     )
-    data = re.sub(pattern, replacement, data, count=1)
+    if count == 0:
+        fatal(f"Unable to find version in `{file_path.as_posix()}`")
+
     try:
-        file_path.write_text(data)
-    except Exception as err:
+        file_path.write_text(data, encoding="utf-8")
+    except OSError as err:
         fatal(f"The `{file_path.as_posix()}` file can't be written", err)
 
 
-def __set_version(version: str) -> None:
-    # Update app version
+def __set_version(version: str) -> list[Path]:
+    """Bump version in all project files and return the updated files."""
     try:
-        Constants.TEMPLY_INIT_PATH.write_text(f"""__version__ = \"{version}\"\n""")
-    except Exception as err:
+        Constants.TEMPLY_INIT_PATH.write_text(
+            f'__version__ = "{version}"\n', encoding="utf-8"
+        )
+    except OSError as err:
         fatal(
             f"The `{Constants.TEMPLY_INIT_PATH.as_posix()}` file can't be written", err
         )
+    __update_file_version(Constants.PYPROJECT_PATH, version)
 
-    # Update project version
-    __update_file_version(Constants.PYPROJECT_PATH, version, r"version = \"(.+)\"")
+    # Refresh the lockfile which embeds the project version
+    env = {k: v for k, v in os.environ.items() if k not in ("UV_FROZEN", "UV_LOCKED")}
+    require("uv")("lock", _env=env, _out=sys.stdout, _err=sys.stderr)
 
-    # Update NFPM versions
-    __update_file_version(
-        Constants.DISTRIBUTIONS_NFPM_AMD64_PATH, version, r"version: \"(.+)\""
-    )
-    __update_file_version(
-        Constants.DISTRIBUTIONS_NFPM_ARM64_PATH, version, r"version: \"(.+)\""
-    )
+    return [
+        Constants.TEMPLY_INIT_PATH,
+        Constants.PYPROJECT_PATH,
+        Constants.UV_LOCK_PATH,
+    ]
 
 
-def pre() -> None:
-    # Ensure we have inputs
-    release_version = os.getenv("RELEASE_VERSION")
-    if not release_version:
-        fatal("You must define `RELEASE_VERSION` environment variable.")
-    if not re.match(r"(\d){1,2}\.(\d){1,2}\.(\d){1,2}", release_version):
-        fatal("The `RELEASE_VERSION` should match semver format.")
+def __read_version(env_var: str, pattern: str, example: str) -> str:
+    version = os.getenv(env_var)
+    if not version:
+        fatal(f"You must define `{env_var}` environment variable.")
+    if not re.fullmatch(pattern, version):
+        fatal(f"The `{env_var}` should match the `{example}` format, got `{version}`.")
+    return version
 
-    # Create a new branch
-    branch_name = f"release/v{release_version}"
-    git = detect_git()
+
+def __bump_and_open_pr(version: str, branch_name: str, message: str) -> None:
+    git = require("git")
     git("checkout", "-b", branch_name, _out=sys.stdout, _err=sys.stderr)
 
-    # Update all files
-    __set_version(release_version)
+    files = __set_version(version)
 
-    # Push release branch
-    git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git(
-        "commit",
-        "-m",
-        f"release: temply v{release_version}",
-        "--no-verify",
-        _out=sys.stdout,
-        _err=sys.stderr,
-    )
+    git("add", *files, _out=sys.stdout, _err=sys.stderr)
+    git("commit", "-m", message, "--no-verify", _out=sys.stdout, _err=sys.stderr)
     git("push", "origin", branch_name, _out=sys.stdout, _err=sys.stderr)
 
-    # Create a PR
-    gh = detect_gh()
-    gh(
+    require("gh")(
         "pr",
         "create",
         "--fill",
@@ -88,73 +86,62 @@ def pre() -> None:
     )
 
 
+def pre() -> None:
+    release_version = __read_version(
+        "RELEASE_VERSION", RELEASE_VERSION_PATTERN, "1.2.3"
+    )
+    __bump_and_open_pr(
+        release_version,
+        f"release/v{release_version}",
+        f"release: temply v{release_version}",
+    )
+
+
 def run() -> None:
-    # Read the project version
     release_version = project_version()
+    if not re.fullmatch(RELEASE_VERSION_PATTERN, release_version):
+        fatal(
+            f"The project version `{release_version}` isn't a release version. "
+            "Merge the pre-release PR first."
+        )
 
     # Create the release tag
-    git = detect_git()
+    git = require("git")
     try:
         git("tag", release_version, _out=sys.stdout, _err=sys.stderr)
+    except ErrorReturnCode as err:
+        fatal(f"Unable to create the tag `{release_version}`.", err)
+    try:
         git("push", "origin", release_version, _out=sys.stdout, _err=sys.stderr)
-    except ErrorReturnCode:
-        fatal(f"The release `v{release_version}` already exists.")
+    except ErrorReturnCode as err:
+        git("tag", "-d", release_version, _out=sys.stdout, _err=sys.stderr)
+        fatal(f"Unable to push the tag `{release_version}`.", err)
 
     # Create the release
-    args = [
+    assets = sorted(
+        file.absolute().as_posix()
+        for file in Constants.DIST_PATH.glob("temply*")
+        if file.is_file()
+    )
+    if not assets:
+        fatal(f"No release assets found in `{Constants.DIST_PATH}`.")
+    require("gh")(
         "release",
         "create",
         "--generate-notes",
         "--latest",
         f"--title=temply v{release_version}",
         release_version,
-    ]
-    binaries = [
-        file.absolute().as_posix()
-        for file in Path("dist").glob("./temply*")
-        if file.is_file()
-    ]
-    args.extend(binaries)
-    gh = detect_gh()
-    gh(args, _out=sys.stdout, _err=sys.stderr)
-
-
-def post() -> None:
-    # Ensure we have inputs
-    next_version = os.getenv("NEXT_VERSION")
-    if not next_version:
-        fatal("You must define `NEXT_VERSION` environment variable")
-    if not re.match(r"(\d){1,2}\.(\d){1,2}\.(\d){1,2}-dev", next_version):
-        fatal("The `NEXT_VERSION` should match semver format.")
-
-    # Create a new branch
-    branch_name = f"feat/post-release-v{next_version}"
-    git = detect_git()
-    git("checkout", "-b", branch_name, _out=sys.stdout, _err=sys.stderr)
-
-    # Update all files
-    __set_version(next_version)
-
-    # Push changes
-    git("add", "--all", _out=sys.stdout, _err=sys.stderr)
-    git(
-        "commit",
-        "-m",
-        "chore: prepare for next iteration",
-        "--no-verify",
+        *assets,
         _out=sys.stdout,
         _err=sys.stderr,
     )
-    git("push", "origin", branch_name, _out=sys.stdout, _err=sys.stderr)
 
-    # Create a PR
-    gh = detect_gh()
-    gh(
-        "pr",
-        "create",
-        "--fill",
-        "--base=main",
-        f"--head={branch_name}",
-        _out=sys.stdout,
-        _err=sys.stderr,
+
+def post() -> None:
+    next_version = __read_version("NEXT_VERSION", NEXT_VERSION_PATTERN, "1.2.3-dev")
+    __bump_and_open_pr(
+        next_version,
+        f"feat/post-release-v{next_version}",
+        "chore: prepare for next iteration",
     )

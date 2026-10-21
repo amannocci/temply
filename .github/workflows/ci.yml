@@ -57,8 +57,13 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
+          name: temply-bundle-${{ matrix.os.target }}
+          path: dist/temply/
+
+      - uses: actions/upload-artifact@v7
+        with:
           name: temply-tarball-${{ matrix.os.target }}
-          path: dist/
+          path: dist/*.tar.gz
 
   test:
     needs:
@@ -103,8 +108,8 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: temply-tarball-${{ matrix.os.target }}
-          path: dist
+          name: temply-bundle-${{ matrix.os.target }}
+          path: dist/temply
 
       - name: Build deb packages
         run: uv run poe package:deb
@@ -112,7 +117,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: temply-package-deb-${{ matrix.os.target }}
-          path: dist/
+          path: dist/*.deb
 
   package-rpm:
     needs:
@@ -133,8 +138,8 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: temply-tarball-${{ matrix.os.target }}
-          path: dist
+          name: temply-bundle-${{ matrix.os.target }}
+          path: dist/temply
 
       - name: Build rpm packages
         run: uv run poe package:rpm
@@ -142,7 +147,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: temply-package-rpm-${{ matrix.os.target }}
-          path: dist/
+          path: dist/*.rpm
 
   sanitize-deb:
     needs:
@@ -152,23 +157,20 @@ jobs:
         os:
           - runner: ubuntu-24.04
             target: linux-amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64
     runs-on: ${{ matrix.os.runner }}
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install environment
-        uses: ./.github/workflows/env-install
-
       - uses: actions/download-artifact@v8
         with:
           name: temply-package-deb-${{ matrix.os.target }}
           path: dist
 
-      - name: Verify deb amd64 install
+      - name: Verify deb install
         run: |
-          sudo dpkg -i dist/temply*amd64.deb
+          sudo dpkg -i dist/temply*.deb
           sudo apt-get install -qyf
-          temply --version || exit 1
+          temply --version
 
   sanitize-tarball:
     needs:
@@ -180,35 +182,20 @@ jobs:
             target: darwin-arm64
           - runner: macos-15-intel
             target: darwin-amd64
+          - runner: ubuntu-24.04
+            target: linux-amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64
     runs-on: ${{ matrix.os.runner }}
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install environment
-        uses: ./.github/workflows/env-install
-
       - uses: actions/download-artifact@v8
         with:
-          pattern: temply-tarball-darwin-*
-          merge-multiple: true
+          name: temply-tarball-${{ matrix.os.target }}
           path: dist
 
-      - name: Verify macOS amd64 install
+      - name: Verify tarball install
         run: |
-          mkdir -p ~/.local/bin/
-          mkdir -p ~/.local/opt/temply
-          tar -C ~/.local/opt/temply -xzf dist/temply-*amd64.tar.gz
-          chmod + ~/.local/opt/temply/temply
+          mkdir -p ~/.local/bin ~/.local/opt/temply
+          tar -C ~/.local/opt/temply -xzf dist/temply-*-${{ matrix.os.target }}.tar.gz
           ln -sf ~/.local/opt/temply/temply ~/.local/bin/temply
-          ~/.local/bin/temply --version || exit 1
-        if: runner.arch == 'X64'
-
-      - name: Verify macOS arm64 install
-        run: |
-          mkdir -p ~/.local/bin/
-          mkdir -p ~/.local/opt/temply
-          tar -C ~/.local/opt/temply -xzf dist/temply-*arm64.tar.gz
-          chmod + ~/.local/opt/temply/temply
-          ln -sf ~/.local/opt/temply/temply ~/.local/bin/temply
-          ~/.local/bin/temply --version || exit 1
-        if: runner.arch == 'ARM64'
+          ~/.local/bin/temply --version

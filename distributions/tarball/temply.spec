@@ -1,8 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 
 
 a = Analysis(
-    ['bin/temply'],
+    [os.path.join(SPECPATH, '..', '..', 'bin', 'temply')],
     pathex=[],
     binaries=[],
     datas=[],

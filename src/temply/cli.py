@@ -2,20 +2,29 @@ from pathlib import Path
 
 import click
 import jinja2
-from jinja2 import DictLoader, Environment, FileSystemLoader
+import yaml
+from jinja2 import ChoiceLoader, DictLoader, Environment, FileSystemLoader
 
-from . import __version__
-from .filters import from_json, from_yaml, get_environment, to_json, to_yaml
-from .loaders import ChainLoader, DotenvLoader, EnvdirLoader, EnvLoader, JsonFileLoader
-
-
-class TemplateRenderError(Exception):
-    """Raised when a template fails to render due to undefined variables."""
+from temply import __version__
+from temply.filters import from_json, from_yaml, get_environment, to_json, to_yaml
+from temply.io import write_atomically
+from temply.loaders import (
+    ChainLoader,
+    DotenvLoader,
+    EnvdirLoader,
+    EnvLoader,
+    JsonFileLoader,
+    Loader,
+)
 
 
 @click.command("temply")
 @click.option("--allow-missing", help="Allow missing variables.", is_flag=True)
-@click.option("--keep-template", help="Keep original template file.", is_flag=True)
+@click.option(
+    "--keep-template",
+    help="Keep original template file (it is deleted after rendering by default).",
+    is_flag=True,
+)
 @click.option(
     "--envdir",
     help="Load environment variables from directory",
@@ -53,51 +62,44 @@ def main(
     input_file: Path | None,
 ) -> None:
     """Render jinja2 templates on the command line with environment variables."""
-    # Define undefined behaviour
-    if allow_missing:
-        undefined_behaviour = jinja2.Undefined
-    else:
-        undefined_behaviour = jinja2.StrictUndefined
-
     # Decide if we use stdin or regular file
+    loader: jinja2.BaseLoader
     if input_file:
-        # Template name
-        template_name = str(input_file.name)
-
-        # Set loader
+        template_name = input_file.name
         loader = FileSystemLoader(input_file.parent.absolute())
     else:
-        # Template name
         template_name = "stdin_template"
-
-        # Set loader
-        loader = DictLoader({template_name: click.get_text_stream("stdin").read()})
+        with click.open_file("-") as stdin:
+            source = stdin.read()
+        # Allow stdin templates to include files relative to current directory
+        loader = ChoiceLoader(
+            [DictLoader({template_name: source}), FileSystemLoader(Path.cwd())]
+        )
 
     # Setup environment
     env = Environment(
         loader=loader,
-        undefined=undefined_behaviour,
+        undefined=jinja2.Undefined if allow_missing else jinja2.StrictUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
+    env.filters.update(
+        {
+            "from_json": from_json,
+            "fromjson": from_json,
+            "to_json": to_json,
+            "tojson": to_json,
+            "from_yaml": from_yaml,
+            "fromyaml": from_yaml,
+            "to_yaml": to_yaml,
+            "toyaml": to_yaml,
+        }
+    )
+    env.globals["environment"] = get_environment
 
-    # Setup env
-    env.filters["from_json"] = from_json
-    env.filters["fromjson"] = from_json
-    env.filters["to_json"] = to_json
-    env.filters["tojson"] = to_json
-    env.filters["from_yaml"] = from_yaml
-    env.filters["fromyaml"] = from_yaml
-    env.filters["to_yaml"] = to_yaml
-    env.filters["toyaml"] = to_yaml
-
-    # Render template
-    template = env.get_template(template_name)
-    template.globals["environment"] = get_environment
-
-    # Compute env
-    loaders = [EnvLoader()]
+    # Compute env (later loaders override earlier ones)
+    loaders: list[Loader] = [EnvLoader()]
     if envdir:
         loaders.append(EnvdirLoader(envdir))
     if dotenv:
@@ -106,17 +108,21 @@ def main(
         loaders.append(JsonFileLoader(json_file))
     envs = ChainLoader(loaders).load()
 
+    # Render template
     try:
-        rendering = template.render(**envs)
-    except jinja2.UndefinedError as err:
-        raise TemplateRenderError(err) from err
-
-    # Remove template
-    if input_file and not keep_template:
-        Path(input_file).unlink()
+        rendering = env.get_template(template_name).render(envs)
+    except (jinja2.TemplateError, ValueError, TypeError, yaml.YAMLError) as err:
+        raise click.ClickException(f"Unable to render template: {err}") from err
 
     # Stdout or file
     if output_file:
-        Path(output_file).write_text(rendering, encoding="utf-8")
+        try:
+            write_atomically(output_file, rendering)
+        except OSError as err:
+            raise click.FileError(str(output_file), err.strerror or str(err)) from err
     else:
-        click.echo(rendering)
+        click.echo(rendering, nl=False)
+
+    # Remove template only once output is safely written
+    if input_file and not keep_template:
+        input_file.unlink()

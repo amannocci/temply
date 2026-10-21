@@ -1,15 +1,16 @@
 import json
+from collections.abc import Iterator
+from typing import Any
 
 import yaml
-from jinja2 import pass_context, pass_eval_context
+from jinja2 import pass_context
+from jinja2.runtime import Context
 
 
-@pass_eval_context
-def from_json(_, value):
+def from_json(value: str) -> Any:
     """
     Parse json value.
     Args:
-        _: any.
         value: value to parse.
 
     Returns:
@@ -18,26 +19,22 @@ def from_json(_, value):
     return json.loads(value)
 
 
-@pass_eval_context
-def to_json(_, value):
+def to_json(value: Any) -> str:
     """
     Convert any value to json.
     Args:
-        _: any.
         value: value to convert.
 
     Returns:
         converted value.
     """
-    return json.dumps(value).strip()
+    return json.dumps(value, ensure_ascii=False)
 
 
-@pass_eval_context
-def from_yaml(_, value):
+def from_yaml(value: str) -> Any:
     """
     Parse yaml value.
     Args:
-        _: any.
         value: value to parse.
 
     Returns:
@@ -46,22 +43,22 @@ def from_yaml(_, value):
     return yaml.safe_load(value)
 
 
-@pass_eval_context
-def to_yaml(_, value):
+def to_yaml(value: Any) -> str:
     """
     Convert any value to yaml.
     Args:
-        _: any.
         value: value to convert.
 
     Returns:
         converted value.
     """
-    return yaml.safe_dump(value).strip()
+    # Scalars are dumped with a document end marker (`...`) that we don't want
+    dump = yaml.safe_dump(value, allow_unicode=True)
+    return dump.removesuffix("...\n").rstrip("\n")
 
 
 @pass_context
-def get_environment(ctx, prefix=""):
+def get_environment(ctx: Context, prefix: str = "") -> Iterator[tuple[str, Any]]:
     """
     Filter environment variables with a prefix.
     Args:
@@ -71,6 +68,7 @@ def get_environment(ctx, prefix=""):
     Returns:
         generator with all environment variables with a prefix.
     """
+    # Skip callables to hide jinja globals (range, lipsum, ...)
     for key, value in sorted(ctx.items()):
         if not callable(value) and key.startswith(prefix):
             yield key[len(prefix) :], value

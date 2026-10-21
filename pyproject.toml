@@ -71,7 +71,7 @@ script = "scripts.generate:run"
 
 [tool.poe.tasks.lint]
 help = "Lint code project."
-cmd = "ruff check src"
+cmd = "ruff check src tests"
 
 [tool.poe.tasks.fmt]
 help = "Format code project."
@@ -116,3 +116,9 @@ script = "scripts.release:run"
 [tool.poe.tasks."release:post"]
 help = "Prepare next iteration."
 script = "scripts.release:post"
+
+[tool.ruff.lint]
+extend-select = ["TID252"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
